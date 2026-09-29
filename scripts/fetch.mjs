@@ -9,7 +9,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const KEY = process.env.SERPAPI_KEY;
 const ORIGIN = "BOD";
 const WEEKENDS = 6;       // weekends couverts en dates precises (3 formats chacun)
-const MONTHS = 6;         // mois couverts en mode flexible (1 requete chacun)
+const MONTHS = 6;         // mois couverts en mode flexible (1 requete chacun), limite Google = 6 mois glissants
 const RESERVE = 5;        // requetes gardees en reserve sur le quota du mois
 const FILE = new URL("../data/weekends.json", import.meta.url);
 
@@ -54,6 +54,7 @@ function clean(d) {
     duration: d.flight_duration ?? null,
     stops: d.number_of_stops ?? null,
     airline: d.airline || "",
+    hotel: d.hotel_price ?? null,
     img: d.thumbnail || "",
     lat: gps.latitude ?? null,
     lng: gps.longitude ?? null,
@@ -95,7 +96,7 @@ async function main() {
   const jobs = [];
   const [y0, m0] = today.split("-").map(Number);
   const start = Number(today.slice(8)) > 20 ? 1 : 0; // mois en cours presque fini : on passe
-  for (let i = start; i < start + MONTHS; i++) {
+  for (let i = start; i < MONTHS; i++) { // Google : mois en cours + 5 suivants max
     const y = y0 + Math.floor((m0 - 1 + i) / 12), m = ((m0 - 1 + i) % 12) + 1;
     jobs.push({ ym: `${y}-${String(m).padStart(2, "0")}`, m });
   }

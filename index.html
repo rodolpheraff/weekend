@@ -302,6 +302,7 @@ function build() {
     var x = by[k] || (by[k] = { key: k, city: d.city, country: d.country, code: d.code, img: d.img, lat: d.lat, lng: d.lng, opts: [] });
     if (!x.img && d.img) x.img = d.img;
     if (x.lat == null && d.lat != null) { x.lat = d.lat; x.lng = d.lng; }
+    if (d.hotel != null && (x.hotel == null || d.hotel < x.hotel)) x.hotel = d.hotel;
     x.opts.push({ label: r.label, out: r.out, ret: r.ret, price: d.price, duration: d.duration, stops: d.stops, airline: d.airline });
   });
   var q = norm(S.q);
@@ -375,7 +376,7 @@ function card(x) {
   var s = sky(x, x.cheap.out, x.cheap.ret);
   return '<article class="card" id="c-' + esc(x.key) + '"><div class="ph' + (x.img ? "" : " no") + '" data-dest="' + esc(x.key) + '"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + ">" +
     (x.code ? '<span class="code">' + esc(x.code) + "</span>" : "") + '</div><div class="main">' +
-    '<div class="hd" data-dest="' + esc(x.key) + '"><div><h3>' + esc(x.city) + "</h3><p>" + esc(x.country) + '</p></div><div class="px"><small>A/R dès</small><b>' + eur(x.best) + "</b></div></div>" +
+    '<div class="hd" data-dest="' + esc(x.key) + '"><div><h3>' + esc(x.city) + "</h3><p>" + esc(x.country) + (x.hotel ? " · 🏨 " + eur(x.hotel) + "/nuit" : "") + '</p></div><div class="px"><small>A/R dès</small><b>' + eur(x.best) + "</b></div></div>" +
     '<div class="opts">' + opts + '</div><div class="links"><button data-dest="' + esc(x.key) + '">Météo, guide, hôtels ›</button>' +
     (s ? '<a href="' + s + '" target="_blank" rel="noopener">Skyscanner</a>' : "") + "</div></div></article>";
 }
@@ -470,7 +471,8 @@ function openSheet(key) {
     '<div class="sec"><h4>Vols</h4><div class="opts">' + x.opts.map(function (p) { return optRow(x, p, p === o && x.opts.length > 1); }).join("") + "</div></div>" +
     '<div class="sec"><h4>Météo · ' + dayM(o.out) + " → " + dayM(o.ret) + '</h4><div id="wx" class="muted">Chargement…</div></div>' +
     '<div class="sec"><h4>Le coin</h4><div id="guide" class="guide muted">Chargement…</div></div>' +
-    '<div class="sec"><h4>Dormir · ' + dm(o.out) + " → " + dm(o.ret) + ' · 2 pers.</h4><div class="btns">' +
+    '<div class="sec"><h4>Dormir · ' + dm(o.out) + " → " + dm(o.ret) + ' · 2 pers.</h4>' +
+    (x.hotel ? '<p class="muted" style="margin:0 0 8px">Hôtels dès <b style="color:var(--ink)">' + eur(x.hotel) + "</b> la nuit selon Google.</p>" : "") + '<div class="btns">' +
     '<a class="btn" href="' + booking(x, o.out, o.ret) + '" target="_blank" rel="noopener">Booking ↗</a>' +
     '<a class="btn" href="' + airbnb(x, o.out, o.ret) + '" target="_blank" rel="noopener">Airbnb ↗</a></div></div>' +
     '<div class="sec"><div class="btns"><a class="btn main" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">Voir les vols sur Google Flights ↗</a>' +
