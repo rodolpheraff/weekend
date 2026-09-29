@@ -21,7 +21,7 @@
 :root{
   --bg:#0B1B2B; --bg2:#0F2336; --card:#132B41; --card2:#183450; --line:#22425F;
   --ink:#EEF3F7; --ink2:#9CB1C4; --ink3:#6E879C;
-  --amber:#FFB81C; --amber2:#FFD983; --green:#43D98F;
+  --amber:#FFB81C; --amber2:#FFD983; --green:#43D98F; --red:#FF8A7A;
   --disp:"Bricolage Grotesque",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
 }
 *{box-sizing:border-box}
@@ -29,6 +29,7 @@ html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--di
 body{min-height:100vh;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
 body.lock{overflow:hidden}
 button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
 a{color:inherit}
 .wrap{max-width:720px;margin:0 auto}
 
@@ -42,79 +43,90 @@ h1 em{font-style:normal;color:var(--amber)}
 .sub{margin:0;color:var(--ink2);font-size:14px}
 
 /* barre collante : mode + mois/weekends */
-.bar{position:sticky;top:0;z-index:20;background:rgba(11,27,43,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.bar{position:sticky;top:0;z-index:20;background:rgba(11,27,43,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .modes{display:flex;gap:18px;padding:10px 16px 0}
-.modes button{border:0;background:none;padding:4px 0 8px;font-size:15px;font-weight:800;color:var(--ink3);cursor:pointer;border-bottom:2px solid transparent}
+.modes button{border:0;background:none;padding:4px 0 8px;font-size:15px;font-weight:800;color:var(--ink3);border-bottom:2px solid transparent}
 .modes button.on{color:var(--ink);border-color:var(--amber)}
 .rail{display:flex;gap:8px;overflow-x:auto;padding:8px 16px 10px;scrollbar-width:none}
 .rail::-webkit-scrollbar{display:none}
-.wk{flex:none;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 12px 8px;text-align:left;cursor:pointer;min-width:92px}
+.wk{flex:none;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 12px 8px;text-align:left;min-width:92px}
 .wk b{display:block;font-weight:600;font-size:15px;white-space:nowrap}
 .wk span{display:block;font:500 11px/1.3 var(--mono);color:var(--ink3);margin-top:2px;white-space:nowrap}
 .wk.on{background:var(--amber);border-color:var(--amber);color:#1B1300}
 .wk.on span{color:#5A4200}
+.wk.soon{opacity:.6}
 .wk.cal{position:relative;display:flex;align-items:center;gap:6px;color:var(--ink2);min-width:0}
 .wk.cal input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
 
 /* commandes */
-.ctrl{padding:14px 16px 4px;display:grid;gap:10px}
-.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:3px}
-.seg.two{grid-template-columns:repeat(2,1fr)}
-.seg button{border:0;background:none;border-radius:9px;padding:8px 2px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.ctrl{padding:14px 16px 0;display:grid;gap:10px}
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;border-radius:9px;padding:8px 2px;font-size:13px;font-weight:600;color:var(--ink2);white-space:nowrap}
 .seg button.on{background:var(--card2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
-.row2{display:flex;gap:8px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
-.pill.on{border-color:var(--green);color:var(--green);background-color:rgba(67,217,143,.1)}
-.search:not(:placeholder-shown){border-color:var(--green)}
-select.pill{appearance:none;-webkit-appearance:none;padding-right:26px;
-  background:var(--bg2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239CB1C4' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center}
-.search{flex:1 1 160px;min-width:0;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:7px 14px;font-size:16px}
+.row2{display:flex;gap:8px}
+.search{flex:1 1 0;width:0;min-width:0;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:8px 14px;font-size:16px}
 .search::placeholder{color:var(--ink3)}
-.count{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 16px 4px;font:500 12px/1.4 var(--mono);color:var(--ink3);letter-spacing:.02em}
+.search:not(:placeholder-shown){border-color:var(--green)}
+.fbtn{flex:none;display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--ink2)}
+.fbtn.on{border-color:var(--green);color:var(--green);background:rgba(67,217,143,.1)}
+.fbtn .n{background:var(--green);color:#062414;border-radius:999px;min-width:20px;height:20px;padding:0 6px;font:600 12px/20px var(--mono);text-align:center}
+
+/* panneau de filtres */
+.panel{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:12px 12px 4px}
+.fg{margin-bottom:12px}
+.fg h5{margin:0 0 7px;font:600 10px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--ink3)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;color:var(--ink2)}
+.chip.on{border-color:var(--green);color:var(--green);background:rgba(67,217,143,.12)}
+.pfoot{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);padding:10px 0 8px}
+.pfoot button{border:0;background:none;padding:4px 0;font-weight:600;font-size:13px;color:var(--ink2)}
+.pfoot button.ok{color:var(--amber)}
+
+.count{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px 4px;font:500 12px/1.4 var(--mono);color:var(--ink3);letter-spacing:.02em}
 .count b{color:var(--amber2);font-weight:600}
-.tr{display:block;font:600 11px/1.2 var(--mono);margin-top:2px}
-.tr.down{color:var(--green)} .tr.up{color:#FF8A7A}
-.duo{display:block;font:500 11px/1.3 var(--mono);color:var(--ink2);margin-top:3px;white-space:nowrap}
-.facts{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:5px;font-size:12px;color:var(--ink2)}
-.card.done{opacity:.5}
-.links .on{color:var(--amber)}
-.bud{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 12px}
-.bud div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
-.bud div:last-child{border:0;font-weight:800}
-.bud span{color:var(--ink2)} .bud b{font:600 14px/1.3 var(--mono);white-space:nowrap}
-.bud div:last-child b{color:var(--amber);font-size:17px}
-.surprise{flex:none;border:1px solid var(--amber);background:none;color:var(--amber);border-radius:999px;padding:5px 11px;font:600 12px/1 var(--disp);cursor:pointer}
+.fbtn.dice{padding:8px 11px;font-size:16px;border-color:var(--amber)}
 
 /* cartes destination */
 .list{display:grid;gap:10px;padding:6px 16px}
 .grp{margin:14px 0 0;display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:17px;font-weight:800}
 .grp span{font:500 12px/1 var(--mono);color:var(--ink3)}
-.card{display:grid;grid-template-columns:78px 1fr;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.card{display:grid;grid-template-columns:78px 1fr;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;cursor:pointer;transition:border-color .15s}
+.card:hover{border-color:#2E5578}
+.card:active{background:var(--card2)}
+.card.done{opacity:.5}
 .card.flash{animation:flash 1.6s ease}
 @keyframes flash{0%,40%{box-shadow:0 0 0 2px var(--amber)}100%{box-shadow:0 0 0 0 transparent}}
-.ph{position:relative;background:var(--card2) center/cover no-repeat;cursor:pointer}
+.ph{position:relative;background:var(--card2) center/cover no-repeat}
 .ph.no .code{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);font-size:15px;background:none}
 .ph .code{position:absolute;left:6px;bottom:6px;font:600 11px/1 var(--mono);letter-spacing:.08em;background:rgba(11,27,43,.85);color:var(--amber);padding:4px 5px;border-radius:5px}
 .main{padding:11px 12px 10px;min-width:0}
-.hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;cursor:pointer}
+.hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .hd h3{margin:0;font-size:18px;font-weight:800;line-height:1.1;letter-spacing:-.01em}
+.hd h3 .star{color:var(--amber)}
 .hd p{margin:2px 0 0;color:var(--ink3);font-size:13px}
 .px{text-align:right;flex:none}
 .px small{display:block;font:500 10px/1 var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.1em}
 .px b{font:600 22px/1.1 var(--mono);color:var(--amber)}
+.duo{display:block;font:500 11px/1.3 var(--mono);color:var(--ink2);margin-top:3px;white-space:nowrap}
 .opts{margin-top:8px;display:grid;gap:4px}
 .opt{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;text-decoration:none;background:var(--bg2);border-radius:9px;padding:6px 10px;font-size:13px}
+a.opt:active{background:var(--card2)}
 .opt .l{min-width:0;display:grid;gap:1px}
-.opt:active{background:var(--card2)}
 .opt .f{font:600 11px/1.2 var(--mono);color:var(--ink2);letter-spacing:.02em}
+.opt .f i{font-style:normal;color:var(--ink3)}
 .opt .d{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dir{color:var(--green)}
-.opt .p{font:600 14px/1 var(--mono)}
+.opt .p{font:600 14px/1 var(--mono);text-align:right}
 .opt.best .p{color:var(--amber)}
-.links{display:flex;gap:14px;margin-top:8px;font-size:12px;font-weight:600;flex-wrap:wrap}
-.links a{color:var(--ink2);text-decoration:none}
-.links a::after{content:" ↗"}
-.links button{border:0;background:none;padding:0;color:var(--amber);font-weight:600;cursor:pointer}
+.tr{display:block;font:600 11px/1.2 var(--mono);margin-top:3px}
+.tr.down{color:var(--green)} .tr.up{color:var(--red)}
+.more{margin-top:5px;font-size:12px;color:var(--ink3)}
+.ft{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px}
+.facts{display:flex;flex-wrap:wrap;gap:3px 10px;font-size:12px;color:var(--ink2);min-width:0}
+.ico{display:flex;gap:6px;flex:none}
+.ib{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:var(--bg2);color:var(--ink3);font-size:15px;line-height:1;display:grid;place-items:center;padding:0}
+.ib.fav.on{color:var(--amber);border-color:var(--amber);background:rgba(255,184,28,.12)}
+.ib.done.on{color:var(--green);border-color:var(--green);background:rgba(67,217,143,.12)}
 
 /* carte */
 #map{height:calc(100vh - 290px);min-height:360px;margin:6px 16px;border-radius:16px;border:1px solid var(--line);background:var(--bg2)}
@@ -134,13 +146,15 @@ select.pill{appearance:none;-webkit-appearance:none;padding-right:26px;
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 .hero{position:relative;height:190px;background:var(--card2) center/cover no-repeat}
 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,27,43,0) 30%,var(--bg))}
-.hero .x{position:absolute;right:12px;top:12px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(11,27,43,.8);color:var(--ink);font-size:18px;cursor:pointer}
-.sh{position:relative;z-index:1;margin-top:-54px;padding:0 16px}
+.hero .x{position:absolute;right:12px;top:12px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(11,27,43,.8);color:var(--ink);font-size:18px}
+.sh{position:relative;z-index:1;margin-top:-54px;padding:0 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
 .sh h2{margin:0;font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em}
 .sh .ctry{color:var(--ink2);margin-top:4px}
+.sh .ico .ib{width:40px;height:40px;font-size:18px}
 .sec{margin:18px 16px 0}
 .sec h4{margin:0 0 8px;font:600 11px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--amber)}
 .muted{color:var(--ink3);font-size:13px}
+.note{margin:6px 0 0}
 .days{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none}
 .day{flex:1 0 76px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
 .day .e{font-size:24px;line-height:1.2}
@@ -151,16 +165,24 @@ select.pill{appearance:none;-webkit-appearance:none;padding-right:26px;
 .clim b{display:block;font:600 18px/1.2 var(--mono)}
 .clim small{color:var(--ink3);font-size:12px}
 .guide{font-size:14px;line-height:1.55;color:var(--ink2)}
+.guide p{margin:0 0 8px}
 .guide a{color:var(--amber);font-weight:600}
+.bud{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 12px}
+.bud div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.bud div:last-child{border:0;font-weight:800}
+.bud span{color:var(--ink2)}
+.bud b{font:600 14px/1.3 var(--mono);white-space:nowrap}
+.bud div:last-child b{color:var(--amber);font-size:17px}
+.kv{display:grid;gap:6px;font-size:14px;color:var(--ink2)}
 .btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .btn{display:block;text-align:center;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 8px;font-weight:600;font-size:14px}
-.btn.main{grid-column:1/-1;background:var(--amber);border-color:var(--amber);color:#1B1300}
+.btn.full{grid-column:1/-1}
+.btn.main{background:var(--amber);border-color:var(--amber);color:#1B1300}
 
 /* etats */
 .empty{margin:18px 16px;padding:18px;border:1px dashed var(--line);border-radius:16px;color:var(--ink2);font-size:14px}
 .empty h2{margin:0 0 6px;color:var(--ink);font-size:18px}
 .empty a{color:var(--amber)}
-.empty ol{margin:8px 0 0;padding-left:20px}
 footer{padding:18px 16px 0;color:var(--ink3);font-size:12px;line-height:1.5}
 </style>
 </head>
@@ -181,42 +203,54 @@ footer{padding:18px 16px 0;color:var(--ink3);font-size:12px;line-height:1.5}
 <div id="sheet"></div>
 
 <script>
-var FORMATS = [
-  { id: "ven-dim", label: "Ven → Dim" },
-  { id: "sam-dim", label: "Sam → Dim" },
-  { id: "ven-lun", label: "Ven → Lun" }
-];
-var BUDGETS = [0, 80, 120, 150, 200, 300];
+var WEEKENDS = 12;   // weekends couverts par le robot (cf scripts/fetch.mjs)
+var DAILY = 100;     // depenses sur place pour 2 par jour en France (repas, sorties, transports)
+var BUDGETS = [80, 120, 150, 200, 300];
 var MOIS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
 var MOISL = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 var JOURS = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
+var DEP_DAYS = [3, 4, 5, 6];   // mer -> sam
+var NIGHTS = [2, 3, 4];
 var BOD = [44.8283, -0.7156];
 
-var S = { data: null, mode: "month", month: null, wk: null, fmt: "all", direct: false, max: 0, sort: "price", group: "none", view: "list", q: "", down: false, favOnly: false, hideDone: false };
-var DAILY = 100; // depenses sur place pour 2 par jour en France (repas, sorties, transports), ajuste au niveau des prix du pays
+var DEFAULTS = { direct: false, down: false, favOnly: false, hideDone: false, max: 0, sort: "price", group: "none", days: [], nights: [] };
+var S = Object.assign({ data: null, mode: "month", month: null, wk: null, view: "list", q: "", panel: false }, JSON.parse(JSON.stringify(DEFAULTS)));
+try { Object.assign(S, JSON.parse(localStorage.getItem("wk-prefs") || "{}")); } catch (e) {}
+S.month = null; S.wk = null; S.q = ""; S.panel = false;
+if (!Array.isArray(S.days)) S.days = [];
+if (!Array.isArray(S.nights)) S.nights = [];
+
 function loadSet(k) { try { return JSON.parse(localStorage.getItem(k) || "[]"); } catch (e) { return []; } }
 var FAV = loadSet("wk-fav"), DONE = loadSet("wk-done");
-function toggle(arr, k, v) { var i = arr.indexOf(v); if (i === -1) arr.push(v); else arr.splice(i, 1); try { localStorage.setItem(k, JSON.stringify(arr)); } catch (e) {} }
-try { Object.assign(S, JSON.parse(localStorage.getItem("wk-prefs") || "{}")); } catch (e) {}
-S.month = null; S.wk = null; S.q = "";
-var CUR = {};      // destinations affichees, par cle
-var MAP = null;
-
+function toggleIn(arr, v) { var i = arr.indexOf(v); if (i === -1) arr.push(v); else arr.splice(i, 1); }
+function saveSets() { try { localStorage.setItem("wk-fav", JSON.stringify(FAV)); localStorage.setItem("wk-done", JSON.stringify(DONE)); } catch (e) {} }
 function savePrefs() {
-  try { localStorage.setItem("wk-prefs", JSON.stringify({ mode: S.mode, fmt: S.fmt, direct: S.direct, max: S.max, sort: S.sort, group: S.group, view: S.view, down: S.down, favOnly: S.favOnly, hideDone: S.hideDone })); } catch (e) {}
+  var p = { mode: S.mode, view: S.view };
+  Object.keys(DEFAULTS).forEach(function (k) { p[k] = S[k]; });
+  try { localStorage.setItem("wk-prefs", JSON.stringify(p)); } catch (e) {}
 }
+var CUR = {};        // destinations affichees, par cle
+var MAP = null, SHEET = null;
 
 // ---------- dates ----------
 function pd(s) { var p = s.split("-"); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); }
 function iso(d) { return d.toISOString().slice(0, 10); }
 function add(s, n) { var d = pd(s); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
 function today() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date()); }
-function daysTo(s) { return Math.round((pd(s) - pd(today())) / 864e5); }
+function daysBetween(a, b) { return Math.round((pd(b) - pd(a)) / 864e5); }
+function daysTo(s) { return daysBetween(today(), s); }
+function dow(s) { return pd(s).getUTCDay(); }
+// Vendredi du weekend en cours (sam/dim) ou a venir (lun-ven), comme le robot
 function fridayOf(s) {
-  var dow = pd(s).getUTCDay();
-  if (dow === 6) return add(s, -1);
-  if (dow === 0) return add(s, -2);
-  return add(s, 5 - dow);
+  var d = dow(s);
+  if (d === 6) return add(s, -1);
+  if (d === 0) return add(s, -2);
+  return add(s, 5 - d);
+}
+function fridays() {
+  var f = fridayOf(today()), out = [];
+  for (var i = 0; i < WEEKENDS; i++) { out.push(f); f = add(f, 7); }
+  return out;
 }
 function wkLabel(fri) {
   var sa = pd(add(fri, 1)), su = pd(add(fri, 2));
@@ -230,8 +264,15 @@ function monthLabel(ym, short) {
 }
 function day(s) { var d = pd(s); return JOURS[d.getUTCDay()] + " " + d.getUTCDate(); }
 function dayM(s) { var d = pd(s); return day(s) + " " + MOIS[d.getUTCMonth()]; }
+function span(out, ret) { return (pd(out).getUTCMonth() === pd(ret).getUTCMonth() ? day(out) : dayM(out)) + " → " + dayM(ret); }
+function nightsTxt(n) { return n + (n > 1 ? " nuits" : " nuit"); }
 function dm(s) { var d = pd(s); return d.getUTCDate() + "/" + String(d.getUTCMonth() + 1).padStart(2, "0"); }
 function yymmdd(s) { return s.slice(2, 4) + s.slice(5, 7) + s.slice(8, 10); }
+function ago(isoTs) {
+  if (!isoTs) return "";
+  var n = daysBetween(isoTs.slice(0, 10), today());
+  return n <= 0 ? "aujourd'hui" : n === 1 ? "hier" : "il y a " + n + " j";
+}
 
 // ---------- formats ----------
 function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
@@ -266,42 +307,39 @@ function booking(x, out, ret) {
 function airbnb(x, out, ret) {
   return "https://www.airbnb.fr/s/" + encodeURIComponent(x.city + "--" + x.country) + "/homes?checkin=" + out + "&checkout=" + ret + "&adults=2";
 }
+function gHotels(x) { return "https://www.google.com/travel/search?q=" + encodeURIComponent("hôtels " + x.city) + "&hl=fr&curr=EUR"; }
+function transit(x) {
+  return "https://www.google.com/maps/dir/?api=1&origin=" + encodeURIComponent(x.code + " airport") + "&destination=" + encodeURIComponent(x.city + ", " + x.country) + "&travelmode=transit";
+}
 
 // ---------- donnees ----------
-function weekends() {
-  if (!S.data) return [];
-  var t = today();
-  return Object.keys(S.data.weekends || {}).filter(function (f) { return add(f, 3) >= t; }).sort();
-}
 function months() {
   if (!S.data) return [];
   var m = today().slice(0, 7);
   return Object.keys(S.data.months || {}).filter(function (k) { return k >= m && S.data.months[k].dests.length; }).sort();
 }
-function minWk(w) {
+function combos(fri) {
+  var w = S.data.weekends && S.data.weekends[fri];
+  return w ? Object.keys(w).map(function (k) { return w[k]; }).filter(function (c) { return c.out >= today(); }) : [];
+}
+function minWk(fri) {
   var m = Infinity;
-  FORMATS.forEach(function (f) { var c = w[f.id]; if (c && c.dests.length) m = Math.min(m, c.dests[0].price); });
+  combos(fri).forEach(function (c) { if (c.dests.length) m = Math.min(m, c.dests[0].price); });
   return m;
 }
+function hasWeekendData() { return fridays().some(function (f) { return combos(f).length; }); }
 
-// Options brutes de la vue courante : { d, label, out, ret }
+// Options brutes de la vue courante : { d, out, ret }
 function rawOptions() {
   var out = [];
   if (S.mode === "month") {
     var m = S.data.months && S.data.months[S.month];
     if (!m) return null;
-    m.dests.forEach(function (d) {
-      if (d.out < today()) return;
-      out.push({ d: d, label: dayM(d.out) + " → " + dayM(d.ret), out: d.out, ret: d.ret });
-    });
+    m.dests.forEach(function (d) { if (d.out >= today()) out.push({ d: d, out: d.out, ret: d.ret }); });
   } else {
-    var w = S.data.weekends[S.wk];
-    if (!w) return null;
-    FORMATS.forEach(function (f) {
-      if (S.fmt !== "all" && S.fmt !== f.id) return;
-      var c = w[f.id]; if (!c) return;
-      c.dests.forEach(function (d) { out.push({ d: d, label: f.label + " · " + dm(c.out) + " → " + dm(c.ret), out: c.out, ret: c.ret }); });
-    });
+    var cs = combos(S.wk);
+    if (!cs.length) return null;
+    cs.forEach(function (c) { c.dests.forEach(function (d) { out.push({ d: d, out: c.out, ret: c.ret }); }); });
   }
   return out;
 }
@@ -311,16 +349,18 @@ function build() {
   if (!raw) return null;
   var by = {};
   raw.forEach(function (r) {
-    var d = r.d;
+    var d = r.d, n = daysBetween(r.out, r.ret);
     if (S.direct && d.stops !== 0) return;
     if (S.max && d.price > S.max) return;
+    if (S.days.length && S.days.indexOf(dow(r.out)) === -1) return;
+    if (S.nights.length && S.nights.indexOf(Math.min(n, 4)) === -1) return;
     var k = d.code || d.city;
     var x = by[k] || (by[k] = { key: k, city: d.city, country: d.country, code: d.code, img: d.img, lat: d.lat, lng: d.lng, opts: [] });
     if (!x.img && d.img) x.img = d.img;
     if (x.lat == null && d.lat != null) { x.lat = d.lat; x.lng = d.lng; }
     if (d.hotel != null && (x.hotel == null || d.hotel < x.hotel)) x.hotel = d.hotel;
     if (d.km != null) x.km = d.km;
-    x.opts.push({ label: r.label, out: r.out, ret: r.ret, price: d.price, prev: d.prev, duration: d.duration, stops: d.stops, airline: d.airline });
+    x.opts.push({ out: r.out, ret: r.ret, nights: n, price: d.price, prev: d.prev, duration: d.duration, stops: d.stops, airline: d.airline });
   });
   var q = norm(S.q);
   var list = Object.keys(by).map(function (k) { return by[k]; }).filter(function (x) {
@@ -330,9 +370,10 @@ function build() {
     return !q || norm(x.city + " " + x.country + " " + x.code + " " + x.opts.map(function (o) { return o.airline; }).join(" ")).indexOf(q) !== -1;
   });
   list.forEach(function (x) {
-    x.best = Math.min.apply(null, x.opts.map(function (o) { return o.price; }));
+    x.opts.sort(function (a, b) { return a.price - b.price || a.out.localeCompare(b.out); });
+    x.cheap = x.opts[0];
+    x.best = x.cheap.price;
     x.fast = Math.min.apply(null, x.opts.map(function (o) { return o.duration || 9999; }));
-    x.cheap = x.opts.slice().sort(function (a, b) { return a.price - b.price; })[0];
     x.budget = budget(x, x.cheap);
   });
   list.sort(function (a, b) {
@@ -348,7 +389,6 @@ function build() {
 
 // Budget pour 2 : vols x2 + hotel x nuits + depenses sur place ajustees au cout de la vie
 function costIdx(x) { return S.data.cost && S.data.cost[x.country]; }
-function daysBetween(a, b) { return Math.round((pd(b) - pd(a)) / 864e5); }
 function budget(x, o) {
   var nights = Math.max(1, daysBetween(o.out, o.ret));
   var idx = costIdx(x) || 100;
@@ -366,8 +406,8 @@ function costTxt(x) {
   var d = i - 100;
   return Math.abs(d) < 5 ? "prix comme en France" : (d < 0 ? Math.abs(d) + " % moins cher qu'en France" : d + " % plus cher qu'en France");
 }
-function transit(x) {
-  return "https://www.google.com/maps/dir/?api=1&origin=" + encodeURIComponent(x.code + " airport") + "&destination=" + encodeURIComponent(x.city + ", " + x.country) + "&travelmode=transit";
+function activeCount() {
+  return (S.direct ? 1 : 0) + (S.down ? 1 : 0) + (S.favOnly ? 1 : 0) + (S.hideDone ? 1 : 0) + (S.max ? 1 : 0) + (S.days.length ? 1 : 0) + (S.nights.length ? 1 : 0);
 }
 
 // ---------- rendu ----------
@@ -382,59 +422,70 @@ function renderBar() {
       return '<button class="wk' + (m === S.month ? " on" : "") + '" data-month="' + m + '"><b>' + monthLabel(m, true) + "</b><span>dès " + eur(ds[0].price) + "</span></button>";
     }).join("");
   } else {
-    var ws = weekends();
-    html = ws.map(function (f) {
-      var m = minWk(S.data.weekends[f]);
-      return '<button class="wk' + (f === S.wk ? " on" : "") + '" data-wk="' + f + '"><b>' + wkLabel(f) + "</b><span>" + (isFinite(m) ? "dès " + eur(m) : "—") + "</span></button>";
+    var fs = fridays();
+    html = fs.map(function (f) {
+      var m = minWk(f);
+      return '<button class="wk' + (f === S.wk ? " on" : "") + (isFinite(m) ? "" : " soon") + '" data-wk="' + f + '"><b>' + wkLabel(f) + "</b><span>" + (isFinite(m) ? "dès " + eur(m) : "bientôt") + "</span></button>";
     }).join("");
-    if (S.wk && ws.indexOf(S.wk) === -1) html += '<button class="wk on" data-wk="' + S.wk + '"><b>' + wkLabel(S.wk) + "</b><span>pas de prix</span></button>";
+    if (S.wk && fs.indexOf(S.wk) === -1) html += '<button class="wk on" data-wk="' + S.wk + '"><b>' + wkLabel(S.wk) + "</b><span>hors période</span></button>";
     html += '<label class="wk cal" title="Choisir une date">📅<b>Autre date</b><input type="date" id="cal" min="' + today() + '"></label>';
   }
   document.getElementById("rail").innerHTML = html;
+  var on = document.querySelector("#rail .on");
+  if (on && on.scrollIntoView) on.scrollIntoView({ block: "nearest", inline: "nearest" });
 }
+
+function chip(attr, val, label, on) { return '<button class="chip' + (on ? " on" : "") + '" ' + attr + '="' + val + '">' + label + "</button>"; }
 
 function renderCtrl() {
-  var seg = S.mode === "weekend" ? '<div class="seg">' + [{ id: "all", label: "Tous" }].concat(FORMATS).map(function (f) {
-    return '<button data-fmt="' + f.id + '" class="' + (S.fmt === f.id ? "on" : "") + '">' + f.label + "</button>";
-  }).join("") + "</div>" : "";
-  function opts(arr, cur) {
-    return arr.map(function (o) { return '<option value="' + o[0] + '"' + (String(cur) === String(o[0]) ? " selected" : "") + ">" + o[1] + "</option>"; }).join("");
+  var n = activeCount();
+  var html = '<div class="ctrl">' +
+    '<div class="seg"><button data-view="list" class="' + (S.view === "list" ? "on" : "") + '">☰ Liste</button><button data-view="map" class="' + (S.view === "map" ? "on" : "") + '">🗺️ Carte</button></div>' +
+    '<div class="row2"><input class="search" id="q" type="search" placeholder="Ville, pays ou compagnie" value="' + esc(S.q) + '">' +
+    '<button class="fbtn' + (n || S.panel ? " on" : "") + '" id="panel">Filtres' + (n ? '<span class="n">' + n + "</span>" : "") + "</button>" +
+    '<button class="fbtn dice" id="surprise" title="Surprends-moi" aria-label="Surprends-moi">🎲</button></div>';
+  if (S.panel) {
+    html += '<div class="panel">' +
+      '<div class="fg"><h5>Vols</h5><div class="chips">' + chip("data-flag", "direct", "Direct seulement", S.direct) + chip("data-flag", "down", "📉 Prix en baisse", S.down) + "</div></div>" +
+      '<div class="fg"><h5>Jour de départ</h5><div class="chips">' + DEP_DAYS.map(function (d) { return chip("data-day", d, JOURS[d], S.days.indexOf(d) !== -1); }).join("") + "</div></div>" +
+      '<div class="fg"><h5>Nuits sur place</h5><div class="chips">' + NIGHTS.map(function (k) { return chip("data-n", k, k === 4 ? "4 et +" : k, S.nights.indexOf(k) !== -1); }).join("") + "</div></div>" +
+      '<div class="fg"><h5>Prix du vol (A/R, 1 pers.)</h5><div class="chips">' + chip("data-max", 0, "Tous", !S.max) + BUDGETS.map(function (b) { return chip("data-max", b, "≤ " + b + " €", S.max === b); }).join("") + "</div></div>" +
+      '<div class="fg"><h5>Mes listes</h5><div class="chips">' + chip("data-flag", "favOnly", "★ Favoris seulement", S.favOnly) + chip("data-flag", "hideDone", "Masquer « déjà fait »", S.hideDone) + "</div></div>" +
+      '<div class="fg"><h5>Trier par</h5><div class="chips">' + [["price", "Prix du vol"], ["budget", "Budget pour 2"], ["duration", "Vol le plus court"], ["name", "A → Z"]].map(function (s) { return chip("data-sort", s[0], s[1], S.sort === s[0]); }).join("") + "</div></div>" +
+      '<div class="fg"><h5>Regrouper</h5><div class="chips">' + [["none", "Non"], ["country", "Par pays"], ["airline", "Par compagnie"]].map(function (s) { return chip("data-group", s[0], s[1], S.group === s[0]); }).join("") + "</div></div>" +
+      '<div class="pfoot"><button id="reset">Tout réinitialiser</button><button class="ok" id="panel-ok">Voir les résultats</button></div></div>';
   }
-  var bud = BUDGETS.map(function (b) { return [b, b ? "≤ " + b + " €" : "Tout budget"]; });
-  return '<div class="ctrl">' + seg +
-    '<div class="seg two"><button data-view="list" class="' + (S.view === "list" ? "on" : "") + '">☰ Liste</button><button data-view="map" class="' + (S.view === "map" ? "on" : "") + '">🗺️ Carte</button></div>' +
-    '<div class="row2">' +
-    '<button class="pill' + (S.direct ? " on" : "") + '" id="direct">' + (S.direct ? "✓ " : "") + "Direct</button>" +
-    '<button class="pill' + (S.down ? " on" : "") + '" id="down">📉 En baisse</button>' +
-    '<button class="pill' + (S.favOnly ? " on" : "") + '" id="favOnly">★ Favoris</button>' +
-    '<button class="pill' + (S.hideDone ? " on" : "") + '" id="hideDone">Masquer « déjà fait »</button>' +
-    '<select class="pill' + (S.max ? " on" : "") + '" id="max">' + opts(bud, S.max) + "</select>" +
-    (S.view === "list" ? '<select class="pill' + (S.sort !== "price" ? " on" : "") + '" id="sort">' + opts([["price", "Vol le moins cher"], ["budget", "Budget pour 2"], ["duration", "Vol le plus court"], ["name", "A → Z"]], S.sort) + "</select>" +
-      '<select class="pill' + (S.group !== "none" ? " on" : "") + '" id="group">' + opts([["none", "Sans groupe"], ["country", "Par pays"], ["airline", "Par compagnie"]], S.group) + "</select>" : "") +
-    '<input class="search" id="q" type="search" placeholder="Ville, pays ou compagnie" value="' + esc(S.q) + '"></div></div>';
+  return html + "</div>";
 }
 
-function optRow(x, o, best) {
-  var bits = [o.airline && esc(o.airline), stops(o.stops), dur(o.duration)].filter(Boolean).join(" · ");
-  return '<a class="opt' + (best ? " best" : "") + '" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">' +
-    '<span class="l"><span class="f">' + o.label + '</span><span class="d">' + bits + '</span></span><span class="p">' + eur(o.price) + trend(o) + "</span></a>";
+function optRow(x, o, best, link) {
+  var bits = [nightsTxt(o.nights), o.airline && esc(o.airline), stops(o.stops), dur(o.duration)].filter(Boolean).join(" · ");
+  var inner = '<span class="l"><span class="f">' + span(o.out, o.ret) + '</span><span class="d">' + bits + '</span></span><span class="p">' + eur(o.price) + trend(o) + "</span>";
+  return link
+    ? '<a class="opt' + (best ? " best" : "") + '" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">' + inner + "</a>"
+    : '<div class="opt' + (best ? " best" : "") + '">' + inner + "</div>";
+}
+
+function icons(x) {
+  var fav = FAV.indexOf(x.city) !== -1, done = DONE.indexOf(x.city) !== -1;
+  return '<div class="ico"><button class="ib fav' + (fav ? " on" : "") + '" data-fav="' + esc(x.city) + '" aria-label="Favori" title="Favori">' + (fav ? "★" : "☆") + "</button>" +
+    '<button class="ib done' + (done ? " on" : "") + '" data-done="' + esc(x.city) + '" aria-label="Déjà fait" title="Déjà fait">✓</button></div>';
 }
 
 function card(x) {
-  var opts = x.opts.map(function (o) { return optRow(x, o, o.price === x.best && x.opts.length > 1); }).join("");
-  var s = sky(x, x.cheap.out, x.cheap.ret);
   var fav = FAV.indexOf(x.city) !== -1, done = DONE.indexOf(x.city) !== -1;
   var ci = costIdx(x);
   var facts = [x.hotel ? "🏨 " + eur(x.hotel) + "/nuit" : "", ci ? "💰 vie " + (ci < 100 ? "−" : "+") + Math.abs(ci - 100) + " %" : "", x.km != null ? "🚌 aéroport à " + x.km + " km" : ""].filter(Boolean);
-  return '<article class="card' + (done ? " done" : "") + '" id="c-' + esc(x.key) + '"><div class="ph' + (x.img ? "" : " no") + '" data-dest="' + esc(x.key) + '"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + ">" +
-    (x.code ? '<span class="code">' + esc(x.code) + "</span>" : "") + '</div><div class="main">' +
-    '<div class="hd" data-dest="' + esc(x.key) + '"><div><h3>' + (fav ? "★ " : "") + esc(x.city) + "</h3><p>" + esc(x.country) + (done ? " · ✓ déjà fait" : "") + "</p>" +
-    '</div><div class="px"><small>A/R dès</small><b>' + eur(x.best) + '</b><span class="duo">à 2 ≈ ' + eur(x.budget.total) + "</span></div></div>" +
-    (facts.length ? '<div class="facts">' + facts.map(function (f) { return "<span>" + f + "</span>"; }).join("") + "</div>" : "") +
-    '<div class="opts">' + opts + '</div><div class="links"><button data-dest="' + esc(x.key) + '">Budget, météo, guide ›</button>' +
-    '<button class="' + (fav ? "on" : "") + '" data-fav="' + esc(x.city) + '">' + (fav ? "★ Favori" : "☆ Favori") + "</button>" +
-    '<button class="' + (done ? "on" : "") + '" data-done="' + esc(x.city) + '">' + (done ? "✓ Déjà fait" : "Déjà fait ?") + "</button>" +
-    (s ? '<a href="' + s + '" target="_blank" rel="noopener">Skyscanner</a>' : "") + "</div></div></article>";
+  var shown = x.opts.slice(0, 3), more = x.opts.length - shown.length;
+  return '<article class="card' + (done ? " done" : "") + '" id="c-' + esc(x.key) + '" data-dest="' + esc(x.key) + '">' +
+    '<div class="ph' + (x.img ? "" : " no") + '"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + ">" +
+    (x.code ? '<span class="code">' + esc(x.code) + "</span>" : "") + "</div>" +
+    '<div class="main"><div class="hd"><div><h3>' + (fav ? '<span class="star">★</span> ' : "") + esc(x.city) + "</h3><p>" + esc(x.country) + (done ? " · déjà fait" : "") + "</p></div>" +
+    '<div class="px"><small>A/R dès</small><b>' + eur(x.best) + '</b><span class="duo">à 2 ≈ ' + eur(x.budget.total) + "</span></div></div>" +
+    '<div class="opts">' + shown.map(function (o, i) { return optRow(x, o, i === 0 && x.opts.length > 1, false); }).join("") + "</div>" +
+    (more > 0 ? '<div class="more">+ ' + more + (more > 1 ? " autres dates" : " autre date") + "</div>" : "") +
+    '<div class="ft"><div class="facts">' + facts.map(function (f) { return "<span>" + f + "</span>"; }).join("") + "</div>" + icons(x) + "</div>" +
+    "</div></article>";
 }
 
 function groups(list) {
@@ -454,7 +505,7 @@ function render() {
   if (MAP) { MAP.remove(); MAP = null; }
   var app = document.getElementById("app");
   var foot = document.getElementById("foot");
-  if (!S.data || (!weekends().length && !months().length)) {
+  if (!S.data || (!hasWeekendData() && !months().length)) {
     document.getElementById("modes").innerHTML = ""; document.getElementById("rail").innerHTML = "";
     app.innerHTML = '<div class="empty"><h2>Pas encore de prix</h2>Les prix arrivent dès que le robot a tourné une première fois.</div>';
     foot.innerHTML = "";
@@ -463,20 +514,27 @@ function render() {
   renderBar();
 
   var list = build();
+  var ctrl = renderCtrl();
   if (!list) {
-    app.innerHTML = S.mode === "month"
+    app.innerHTML = ctrl + (S.mode === "month"
       ? '<div class="empty"><h2>Vue par mois</h2>Les mois arrivent au prochain relevé des prix.</div>'
-      : '<div class="empty"><h2>Weekend du ' + wkLabel(S.wk) + "</h2>Pas de prix relevés pour ce weekend : la vue par weekend couvre les 6 prochains. " +
-        'Essaie la vue <b>Par mois</b>, ou toutes les destinations sur <a href="' + skyAll(S.wk) + '" target="_blank" rel="noopener">Skyscanner « Partout »</a>.</div>';
+      : fridays().indexOf(S.wk) !== -1
+        ? '<div class="empty"><h2>Weekend du ' + wkLabel(S.wk) + "</h2>Les prix de ce weekend arrivent dans un prochain relevé (le lundi). En attendant, regarde la vue <b>Par mois</b>.</div>"
+        : '<div class="empty"><h2>Weekend du ' + wkLabel(S.wk) + "</h2>La vue par weekend couvre les " + WEEKENDS + " prochains weekends. Essaie la vue <b>Par mois</b>, ou toutes les destinations sur " +
+          '<a href="' + skyAll(S.wk) + '" target="_blank" rel="noopener">Skyscanner « Partout »</a>.</div>');
   } else {
     var n = list.reduce(function (a, x) { return a + x.opts.length; }, 0);
-    var cheapest = Math.min.apply(null, list.map(function (x) { return x.best; }));
+    var cheapest = list.length ? Math.min.apply(null, list.map(function (x) { return x.best; })) : 0;
     var head = S.mode === "month" ? "Un weekend en <b>" + monthLabel(S.month) + "</b> · " : "";
-    app.innerHTML = renderCtrl() +
-      '<div class="count"><span>' + head + "<b>" + list.length + "</b> destinations" + (S.mode === "weekend" ? " · " + n + " options" : "") +
-      (list.length ? " · dès <b>" + eur(cheapest) + "</b>" : "") + "</span>" +
-      (list.length > 1 ? '<button class="surprise" id="surprise">🎲 Surprends-moi</button>' : "") + "</div>" +
-      (!list.length ? '<div class="empty">Aucune destination avec ces filtres.</div>'
+    var age = "";
+    if (S.mode === "weekend") {
+      var ts = combos(S.wk).map(function (c) { return c.fetched; }).filter(Boolean).sort();
+      if (ts.length) age = " · prix relevés " + ago(ts[0]);
+    }
+    app.innerHTML = ctrl +
+      '<div class="count"><span>' + head + "<b>" + list.length + "</b> destinations" + (S.mode === "weekend" ? " · " + n + " dates" : "") +
+      (list.length ? " · dès <b>" + eur(cheapest) + "</b>" : "") + age + "</span></div>" +
+      (!list.length ? '<div class="empty">Aucune destination avec ces filtres.' + (activeCount() ? ' <a href="#" id="reset">Réinitialiser les filtres</a>' : "") + "</div>"
         : S.view === "map" ? '<div id="map"></div>' : groups(list));
     if (S.view === "map" && list.length) drawMap(list);
   }
@@ -484,9 +542,9 @@ function render() {
   var up = S.data.updated ? new Date(S.data.updated) : null;
   foot.innerHTML = (S.mode === "month"
     ? "Vue par mois : pour chaque destination, Google Flights choisit le weekend le moins cher du mois. "
-    : "Vue par weekend : meilleure option par destination et par format. ") +
-    "Prix aller-retour pour 1 adulte en classe éco. Touche une ligne pour voir tous les vols et horaires sur Google Flights, et vérifie le prix avant de réserver." +
-    (up ? "<br>Relevé le " + up.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "") +
+    : "Vue par weekend : départ du mercredi au samedi, retour du samedi au mardi (2 à 4 nuits). Les 2 prochains weekends sont relevés chaque lundi, les suivants à tour de rôle. ") +
+    "Prix aller-retour pour 1 adulte en classe éco, à vérifier sur Google Flights avant de réserver. Touche une destination pour le budget, la météo et le guide." +
+    (up ? "<br>Dernier relevé : " + up.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "") +
     (S.data.searchesLeft != null ? " · " + S.data.searchesLeft + " recherches gratuites restantes ce mois" : "");
 }
 
@@ -495,7 +553,7 @@ function drawMap(list) {
   if (!window.L) { document.getElementById("map").innerHTML = '<p class="empty">Carte indisponible hors ligne.</p>'; return; }
   var pts = list.filter(function (x) { return x.lat != null; });
   if (!pts.length) { document.getElementById("map").outerHTML = '<div class="empty">La carte sera disponible après le prochain relevé des prix.</div>'; return; }
-  MAP = L.map("map", { zoomControl: false, attributionControl: true }).setView(BOD, 5);
+  MAP = L.map("map", { zoomControl: false }).setView(BOD, 5);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>', maxZoom: 18
   }).addTo(MAP);
@@ -513,64 +571,67 @@ function drawMap(list) {
 
 // ---------- fiche destination ----------
 var WX = {}, GUIDE = {};
-var WMO = function (c) {
+function WMO(c) {
   return c === 0 ? "☀️" : c <= 2 ? "🌤️" : c === 3 ? "☁️" : c <= 48 ? "🌫️" : c <= 57 ? "🌦️" : c <= 67 ? "🌧️" : c <= 77 ? "❄️" : c <= 82 ? "🌦️" : c <= 86 ? "🌨️" : "⛈️";
-};
+}
 
-var SHEET = null;
 function openSheet(key) {
   var x = CUR[key]; if (!x) return;
   SHEET = key;
-  var o = x.cheap;
+  var o = x.cheap, b = x.budget;
   var el = document.getElementById("sheet");
+  var s = sky(x, o.out, o.ret);
   el.innerHTML = '<div class="sheet-bg" id="sheet-bg"><div class="sheet" role="dialog" aria-label="' + esc(x.city) + '">' +
     '<div class="hero"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + '><button class="x" id="close" aria-label="Fermer">✕</button></div>' +
-    '<div class="sh"><h2>' + esc(x.city) + '</h2><div class="ctry">' + esc(x.country) + (x.code ? " · " + esc(x.code) : "") + "</div></div>" +
-    '<div class="sec"><h4>Vols</h4><div class="opts">' + x.opts.map(function (p) { return optRow(x, p, p === o && x.opts.length > 1); }).join("") + "</div></div>" +
-    '<div class="sec"><h4>Budget pour 2 · ' + x.budget.nights + (x.budget.nights > 1 ? " nuits" : " nuit") + '</h4><div class="bud">' +
-      "<div><span>Vols A/R × 2</span><b>" + eur(x.budget.flights) + "</b></div>" +
-      "<div><span>Hôtel · " + x.budget.nights + " × " + (x.hotel ? eur(x.hotel) : "?") + "</span><b>" + (x.budget.hotel != null ? eur(x.budget.hotel) : "prochain relevé") + "</b></div>" +
-      "<div><span>Sur place (repas, sorties, transports)</span><b>≈ " + eur(x.budget.onsite) + "</b></div>" +
-      "<div><span>Total</span><b>≈ " + eur(x.budget.total) + "</b></div></div>" +
-      '<p class="muted" style="margin:6px 0 0">Sur place : ' + DAILY + " € par jour à deux en France, ajusté au niveau des prix du pays" + (costIdx(x) ? " (" + costTxt(x) + ", Banque mondiale)" : "") + ". Hôtel : prix Google le plus bas.</p></div>" +
-    '<div class="sec"><h4>Sur place</h4><div class="facts" style="font-size:14px;gap:6px 14px">' +
-      (costIdx(x) ? "<span>💰 " + costTxt(x) + "</span>" : "") +
+    '<div class="sh"><div><h2>' + esc(x.city) + '</h2><div class="ctry">' + esc(x.country) + (x.code ? " · " + esc(x.code) : "") + "</div></div>" + icons(x) + "</div>" +
+
+    '<div class="sec"><h4>Vols · touche pour voir les horaires</h4><div class="opts">' +
+      x.opts.map(function (p, i) { return optRow(x, p, i === 0 && x.opts.length > 1, true); }).join("") + "</div>" +
+      (s ? '<div class="btns" style="margin-top:8px"><a class="btn full" href="' + s + '" target="_blank" rel="noopener">Comparer sur Skyscanner ↗</a></div>' : "") + "</div>" +
+
+    '<div class="sec"><h4>Budget pour 2 · ' + span(o.out, o.ret) + '</h4><div class="bud">' +
+      "<div><span>Vols A/R × 2</span><b>" + eur(b.flights) + "</b></div>" +
+      "<div><span>Hôtel · " + nightsTxt(b.nights) + " × " + (x.hotel ? eur(x.hotel) : "?") + "</span><b>" + (b.hotel != null ? eur(b.hotel) : "prochain relevé") + "</b></div>" +
+      "<div><span>Sur place (repas, sorties, transports)</span><b>≈ " + eur(b.onsite) + "</b></div>" +
+      "<div><span>Total</span><b>≈ " + eur(b.total) + "</b></div></div>" +
+      '<p class="muted note">Calculé sur les dates les moins chères. Sur place : ' + DAILY + " € par jour à deux en France, ajusté au niveau des prix du pays. Hôtel : prix Google le plus bas.</p></div>" +
+
+    '<div class="sec"><h4>Sur place</h4><div class="kv">' +
+      (costIdx(x) ? "<span>💰 " + costTxt(x) + " <span class=\"muted\">(Banque mondiale)</span></span>" : "") +
       (x.km != null ? "<span>🚌 Aéroport " + esc(x.code) + " à " + x.km + " km du centre</span>" : "") + "</div>" +
-      '<div class="btns" style="margin-top:8px"><a class="btn" style="grid-column:1/-1" href="' + transit(x) + '" target="_blank" rel="noopener">Aéroport → centre en transports ↗</a></div></div>' +
-    '<div class="sec"><div class="btns"><button class="btn" data-fav="' + esc(x.city) + '">' + (FAV.indexOf(x.city) !== -1 ? "★ Favori" : "☆ Favori") + "</button>" +
-      '<button class="btn" data-done="' + esc(x.city) + '">' + (DONE.indexOf(x.city) !== -1 ? "✓ Déjà fait" : "Déjà fait ?") + "</button></div></div>" +
-    '<div class="sec"><h4>Météo · ' + dayM(o.out) + " → " + dayM(o.ret) + '</h4><div id="wx" class="muted">Chargement…</div></div>' +
+      '<div class="btns" style="margin-top:8px"><a class="btn full" href="' + transit(x) + '" target="_blank" rel="noopener">Aéroport → centre en transports ↗</a></div></div>' +
+
+    '<div class="sec"><h4>Dormir · ' + dm(o.out) + " → " + dm(o.ret) + " · 2 pers.</h4>" +
+      (x.hotel ? '<p class="muted" style="margin:0 0 8px">Hôtels dès <b style="color:var(--ink)">' + eur(x.hotel) + "</b> la nuit selon Google.</p>" : "") +
+      '<div class="btns"><a class="btn" href="' + booking(x, o.out, o.ret) + '" target="_blank" rel="noopener">Booking ↗</a>' +
+      '<a class="btn" href="' + airbnb(x, o.out, o.ret) + '" target="_blank" rel="noopener">Airbnb ↗</a>' +
+      '<a class="btn full" href="' + gHotels(x) + '" target="_blank" rel="noopener">Hôtels sur Google ↗</a></div></div>' +
+
+    '<div class="sec"><h4>Météo · ' + span(o.out, o.ret) + '</h4><div id="wx" class="muted">Chargement…</div></div>' +
     '<div class="sec"><h4>Le coin</h4><div id="guide" class="guide muted">Chargement…</div></div>' +
-    '<div class="sec"><h4>Dormir · ' + dm(o.out) + " → " + dm(o.ret) + ' · 2 pers.</h4>' +
-    (x.hotel ? '<p class="muted" style="margin:0 0 8px">Hôtels dès <b style="color:var(--ink)">' + eur(x.hotel) + "</b> la nuit selon Google.</p>" : "") + '<div class="btns">' +
-    '<a class="btn" style="grid-column:1/-1" href="https://www.google.com/travel/search?q=' + encodeURIComponent("hôtels " + x.city) + '&hl=fr&curr=EUR" target="_blank" rel="noopener">Hôtels sur Google ↗</a>' +
-    '<a class="btn" href="' + booking(x, o.out, o.ret) + '" target="_blank" rel="noopener">Booking ↗</a>' +
-    '<a class="btn" href="' + airbnb(x, o.out, o.ret) + '" target="_blank" rel="noopener">Airbnb ↗</a></div></div>' +
-    '<div class="sec"><div class="btns"><a class="btn main" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">Voir les vols sur Google Flights ↗</a>' +
-    (sky(x, o.out, o.ret) ? '<a class="btn" style="grid-column:1/-1" href="' + sky(x, o.out, o.ret) + '" target="_blank" rel="noopener">Comparer sur Skyscanner ↗</a>' : "") + "</div></div>" +
+    '<div class="sec"><div class="btns"><a class="btn main full" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">Voir les vols sur Google Flights ↗</a></div></div>' +
     "</div></div>";
   document.body.classList.add("lock");
   loadWeather(x, o);
   loadGuide(x);
 }
-function closeSheet() { document.getElementById("sheet").innerHTML = ""; document.body.classList.remove("lock"); }
+function closeSheet() { SHEET = null; document.getElementById("sheet").innerHTML = ""; document.body.classList.remove("lock"); }
 
 function loadWeather(x, o) {
-  var el = document.getElementById("wx");
-  if (x.lat == null) { el.textContent = "Météo disponible après le prochain relevé des prix."; return; }
+  if (x.lat == null) { document.getElementById("wx").textContent = "Météo disponible après le prochain relevé des prix."; return; }
   var k = x.key + o.out + o.ret;
   var show = function (html) { WX[k] = html; var e = document.getElementById("wx"); if (e) { e.className = ""; e.innerHTML = html; } };
   if (WX[k]) return show(WX[k]);
   var ll = "latitude=" + x.lat + "&longitude=" + x.lng + "&timezone=auto";
 
-  // Prevision si le weekend est dans les 14 jours
+  // Prevision si le retour est dans les 14 jours
   if (daysTo(o.ret) <= 14) {
     fetch("https://api.open-meteo.com/v1/forecast?" + ll + "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&start_date=" + o.out + "&end_date=" + o.ret)
       .then(function (r) { return r.json(); }).then(function (j) {
         var d = j.daily;
         show('<div class="days">' + d.time.map(function (t, i) {
           return '<div class="day"><small>' + day(t) + '</small><div class="e">' + WMO(d.weather_code[i]) + "</div><b>" + Math.round(d.temperature_2m_max[i]) + "° / " + Math.round(d.temperature_2m_min[i]) + "°</b><small>pluie " + (d.precipitation_probability_max[i] == null ? "?" : d.precipitation_probability_max[i]) + " %</small></div>";
-        }).join("") + '</div><p class="muted" style="margin:6px 0 0">Prévisions Open-Meteo.</p>');
+        }).join("") + '</div><p class="muted note">Prévisions Open-Meteo.</p>');
       }).catch(function () { show('<span class="muted">Météo indisponible.</span>'); });
     return;
   }
@@ -599,7 +660,7 @@ function loadWeather(x, o) {
     show('<div class="clim"><div><b>' + Math.round(avg(tx)) + "° / " + Math.round(avg(tn)) + "°</b><small>max / min</small></div>" +
       "<div><b>" + (rp < 20 ? "☀️ " : rp < 45 ? "🌤️ " : "🌧️ ") + rp + " %</b><small>des jours avec pluie</small></div>" +
       (sun.length ? "<div><b>" + Math.round(avg(sun)) + " h</b><small>de soleil par jour</small></div>" : "") +
-      '</div><p class="muted" style="margin:6px 0 0">Moyenne des 3 dernières années à ces dates. Prévisions précises à 2 semaines du départ.</p>');
+      '</div><p class="muted note">Moyenne des 3 dernières années à ces dates. Prévisions précises à 2 semaines du départ.</p>');
   }).catch(function () { show('<span class="muted">Météo indisponible.</span>'); });
 }
 
@@ -613,7 +674,7 @@ function loadGuide(x) {
   };
   var html = function (j, src) {
     var txt = j.extract.length > 700 ? j.extract.slice(0, 700).replace(/\s+\S*$/, "") + "…" : j.extract;
-    return "<p style=\"margin:0 0 8px\">" + esc(txt) + '</p><a href="' + esc(j.content_urls.mobile.page) + '" target="_blank" rel="noopener">Lire la suite sur ' + src + " ↗</a>";
+    return "<p>" + esc(txt) + '</p><a href="' + esc(j.content_urls.mobile.page) + '" target="_blank" rel="noopener">Lire la suite sur ' + src + " ↗</a>";
   };
   get("fr.wikivoyage.org").then(function (j) {
     // Les resumes Wikivoyage sont parfois tres courts : on complete avec Wikipedia
@@ -629,54 +690,71 @@ function loadGuide(x) {
 }
 
 // ---------- evenements ----------
+function rerender(keepScroll) {
+  var y = window.scrollY;
+  render();
+  if (keepScroll) window.scrollTo(0, y);
+}
 document.addEventListener("click", function (e) {
-  if (e.target.id === "sheet-bg" || e.target.closest("#close")) { closeSheet(); return; }
-  var t = e.target.closest("[data-wk],[data-month],[data-mode],[data-fmt],[data-view],[data-dest],[data-fav],[data-done],#direct,#down,#favOnly,#hideDone,#surprise");
-  if (!t) return;
-  if (t.dataset.fav || t.dataset.done) {
-    if (t.dataset.fav) toggle(FAV, "wk-fav", t.dataset.fav); else toggle(DONE, "wk-done", t.dataset.done);
-    var open = document.querySelector(".sheet-bg") ? SHEET : null;
-    var y = window.scrollY;
-    render(); window.scrollTo(0, y);
-    if (open && CUR[open]) openSheet(open);
+  var t = e.target;
+  if (t.id === "sheet-bg" || t.closest("#close")) { closeSheet(); return; }
+
+  // Favori / deja fait : avant l'ouverture de la fiche (les boutons sont dans la carte)
+  var fd = t.closest("[data-fav],[data-done]");
+  if (fd) {
+    if (fd.dataset.fav) toggleIn(FAV, fd.dataset.fav); else toggleIn(DONE, fd.dataset.done);
+    saveSets();
+    var open = SHEET;
+    rerender(true);
+    if (open && CUR[open]) openSheet(open); else if (open) closeSheet();
     return;
   }
-  if (t.dataset.dest) { openSheet(t.dataset.dest); return; }
-  if (t.id === "surprise") {
+  if (t.closest("#reset")) { e.preventDefault(); Object.assign(S, JSON.parse(JSON.stringify(DEFAULTS))); savePrefs(); rerender(true); return; }
+  if (t.closest("a")) return; // liens externes
+
+  var c = t.closest("[data-flag],[data-day],[data-n],[data-max],[data-sort],[data-group]");
+  if (c) {
+    var d = c.dataset;
+    if (d.flag) S[d.flag] = !S[d.flag];
+    if (d.day) toggleIn(S.days, +d.day);
+    if (d.n) toggleIn(S.nights, +d.n);
+    if (d.max != null) S.max = +d.max;
+    if (d.sort) S.sort = d.sort;
+    if (d.group) S.group = d.group;
+    savePrefs(); rerender(true); return;
+  }
+  if (t.closest("#panel")) { S.panel = !S.panel; rerender(true); return; }
+  if (t.closest("#panel-ok")) { S.panel = false; rerender(true); return; }
+
+  if (t.closest("#surprise")) {
     var keys = Object.keys(CUR);
+    if (!keys.length) return;
     var k = keys[Math.floor(Math.random() * keys.length)];
     if (S.view === "map") { openSheet(k); return; }
-    var c = document.getElementById("c-" + k);
-    if (c) { c.scrollIntoView({ behavior: "smooth", block: "center" }); c.classList.remove("flash"); void c.offsetWidth; c.classList.add("flash"); }
+    var el = document.getElementById("c-" + k);
+    if (el) { el.scrollIntoView({ behavior: "smooth", block: "center" }); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
     setTimeout(function () { openSheet(k); }, 700);
     return;
   }
-  if (t.dataset.wk) { S.wk = t.dataset.wk; render(); return; }
-  if (t.dataset.month) { S.month = t.dataset.month; render(); return; }
-  if (t.dataset.mode) S.mode = t.dataset.mode;
-  if (t.dataset.fmt) S.fmt = t.dataset.fmt;
-  if (t.dataset.view) S.view = t.dataset.view;
-  if (t.id === "direct") S.direct = !S.direct;
-  if (t.id === "down") S.down = !S.down;
-  if (t.id === "favOnly") S.favOnly = !S.favOnly;
-  if (t.id === "hideDone") S.hideDone = !S.hideDone;
+
+  var b = t.closest("[data-wk],[data-month],[data-mode],[data-view],[data-dest]");
+  if (!b) return;
+  if (b.dataset.dest) { openSheet(b.dataset.dest); return; }
+  if (b.dataset.wk) { S.wk = b.dataset.wk; render(); return; }
+  if (b.dataset.month) { S.month = b.dataset.month; render(); return; }
+  if (b.dataset.mode) S.mode = b.dataset.mode;
+  if (b.dataset.view) S.view = b.dataset.view;
   savePrefs(); render();
 });
 document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
 document.addEventListener("change", function (e) {
-  var id = e.target.id;
-  if (id === "max") S.max = +e.target.value;
-  else if (id === "sort") S.sort = e.target.value;
-  else if (id === "group") S.group = e.target.value;
-  else if (id === "cal" && e.target.value) { S.wk = fridayOf(e.target.value); render(); return; }
-  else return;
-  savePrefs(); render();
+  if (e.target.id === "cal" && e.target.value) { S.wk = fridayOf(e.target.value); render(); }
 });
 document.addEventListener("input", function (e) {
   if (e.target.id !== "q") return;
   S.q = e.target.value;
   var pos = e.target.selectionStart;
-  render();
+  rerender(true);
   var q = document.getElementById("q");
   q.focus(); q.setSelectionRange(pos, pos);
 });
@@ -684,8 +762,8 @@ document.addEventListener("input", function (e) {
 // ---------- chargement ----------
 function setData(d) {
   S.data = d;
-  var ws = weekends(), ms = months();
-  if (!S.wk || !S.data.weekends[S.wk]) S.wk = ws[0] || null;
+  var fs = fridays(), ms = months();
+  if (!S.wk) S.wk = fs.filter(function (f) { return combos(f).length; })[0] || fs[0];
   if (!S.month || ms.indexOf(S.month) === -1) S.month = ms[0] || null;
   // Pas encore de mois (ancien cache) : vue weekend en attendant, puis retour a la vue mois
   if (S.mode === "month" && !ms.length) { S.mode = "weekend"; S.auto = true; }

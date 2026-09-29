@@ -4,8 +4,8 @@ on:
   push:
     branches: [main]
   schedule:
-    # lundi et jeudi a 3h UTC : 6 mois + 6 weekends x 3 formats = 24 requetes x ~9 passages = ~210 / mois (quota gratuit 250)
-    - cron: "0 3 * * 1,4"
+    # lundi a 3h UTC : 6 mois + 44 weekends (releve tournant) = 50 requetes x ~4,3 passages = ~215 / mois (quota gratuit 250)
+    - cron: "0 3 * * 1"
   workflow_dispatch:
 
 permissions:

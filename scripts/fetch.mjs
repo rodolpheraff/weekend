@@ -8,17 +8,21 @@ import { readFile, writeFile } from "node:fs/promises";
 
 const KEY = process.env.SERPAPI_KEY;
 const ORIGIN = "BOD";
-const WEEKENDS = 6;       // weekends couverts en dates precises (3 formats chacun)
-const MONTHS = 6;         // mois couverts en mode flexible (1 requete chacun), limite Google = 6 mois glissants
-const RESERVE = 5;        // requetes gardees en reserve sur le quota du mois
+const WEEKENDS = 12;          // weekends couverts en dates precises (~3 mois)
+const ALWAYS = 2;             // les N prochains weekends sont rafraichis a chaque passage
+const WEEKEND_BUDGET = 44;    // requetes "weekend" par passage ; les autres weekends tournent (plus anciens d'abord)
+const MONTHS = 6;             // mois couverts en mode flexible (1 requete chacun), limite Google = 6 mois glissants
+const RESERVE = 5;            // requetes gardees en reserve sur le quota du mois
 const FILE = new URL("../data/weekends.json", import.meta.url);
+// Passage hebdomadaire : (6 + 44) x ~4,3 = ~215 requetes / mois (quota gratuit 250)
 
-// Formats de weekend : decalage en jours depuis le vendredi
-const FORMATS = [
-  { id: "ven-dim", out: 0, ret: 2 },
-  { id: "sam-dim", out: 1, ret: 2 },
-  { id: "ven-lun", out: 0, ret: 3 },
-];
+// Combinaisons de 2 a 4 nuits, depart mer-sam, retour sam-mar : decalage en jours depuis le vendredi
+const COMBOS = [
+  ["mer-sam", -2, 1], ["mer-dim", -2, 2],
+  ["jeu-sam", -1, 1], ["jeu-dim", -1, 2], ["jeu-lun", -1, 3],
+  ["ven-dim", 0, 2], ["ven-lun", 0, 3], ["ven-mar", 0, 4],
+  ["sam-lun", 1, 3], ["sam-mar", 1, 4],
+].map(([id, out, ret]) => ({ id, out, ret }));
 
 const iso = (d) => d.toISOString().slice(0, 10);
 const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() + n); return iso(d); };
@@ -69,8 +73,12 @@ async function main() {
 
   // On oublie les weekends et mois passes
   data.months ||= {};
+  const ids = new Set(COMBOS.map((c) => c.id));
+  const lastFri = addDays(firstFriday(), 7 * (WEEKENDS - 1));
   for (const fri of Object.keys(data.weekends)) {
-    if (addDays(fri, 3) < today) delete data.weekends[fri];
+    if (addDays(fri, 4) < today || fri > lastFri) { delete data.weekends[fri]; continue; }
+    // combinaisons d'un ancien reglage
+    for (const id of Object.keys(data.weekends[fri])) if (!ids.has(id)) delete data.weekends[fri][id];
   }
   for (const ym of Object.keys(data.months)) {
     if (ym < today.slice(0, 7)) delete data.months[ym];
@@ -107,8 +115,8 @@ async function fetchPrices(data) {
     console.log("Quota inconnu :", e.message);
   }
 
-  // Les mois d'abord (1 requete = 1 mois), puis les weekends du plus proche au plus lointain :
-  // si le quota manque, on garde les plus utiles
+  // Les mois d'abord (1 requete = 1 mois, toujours rafraichis), puis les weekends :
+  // les ALWAYS plus proches, puis les combinaisons aux prix les plus anciens (jamais releves d'abord)
   const jobs = [];
   const [y0, m0] = today.split("-").map(Number);
   const start = Number(today.slice(8)) > 20 ? 1 : 0; // mois en cours presque fini : on passe
@@ -116,17 +124,20 @@ async function fetchPrices(data) {
     const y = y0 + Math.floor((m0 - 1 + i) / 12), m = ((m0 - 1 + i) % 12) + 1;
     jobs.push({ ym: `${y}-${String(m).padStart(2, "0")}`, m });
   }
+  const wk = [];
   let fri = firstFriday();
   for (let i = 0; i < WEEKENDS; i++, fri = addDays(fri, 7)) {
-    for (const f of FORMATS) {
+    for (const f of COMBOS) {
       const out = addDays(fri, f.out), ret = addDays(fri, f.ret);
-      if (out >= today) jobs.push({ fri, f, out, ret });
+      if (out >= today) wk.push({ fri, f, out, ret, near: i < ALWAYS, last: data.weekends[fri]?.[f.id]?.fetched || "" });
     }
   }
-
-  // Weekends hors fenetre (ex : ancien reglage plus large) : prix plus rafraichis, on les retire
-  const lastFri = addDays(firstFriday(), 7 * (WEEKENDS - 1));
-  for (const fri of Object.keys(data.weekends)) if (fri > lastFri) delete data.weekends[fri];
+  wk.sort((a, b) => (b.near - a.near) || (a.near ? 0 : a.last.localeCompare(b.last)) || a.out.localeCompare(b.out));
+  jobs.push(...wk.slice(0, WEEKEND_BUDGET));
+  if (process.env.DRY) { // test : affiche le plan sans rien consommer
+    console.log(jobs.map((j) => j.ym || `${j.fri} ${j.f.id} ${j.last ? "maj " + j.last.slice(0, 10) : "nouveau"}`).join(" | "));
+    return;
+  }
 
   let done = 0;
   for (const j of jobs) {
