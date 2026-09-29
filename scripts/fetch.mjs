@@ -108,6 +108,10 @@ async function main() {
     }
   }
 
+  // Weekends hors fenetre (ex : ancien reglage plus large) : prix plus rafraichis, on les retire
+  const lastFri = addDays(firstFriday(), 7 * (WEEKENDS - 1));
+  for (const fri of Object.keys(data.weekends)) if (fri > lastFri) delete data.weekends[fri];
+
   let done = 0;
   for (const j of jobs) {
     if (left - done <= RESERVE) {

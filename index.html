@@ -605,7 +605,9 @@ function setData(d) {
   var ws = weekends(), ms = months();
   if (!S.wk || !S.data.weekends[S.wk]) S.wk = ws[0] || null;
   if (!S.month || ms.indexOf(S.month) === -1) S.month = ms[0] || null;
-  if (S.mode === "month" && !ms.length) S.mode = "weekend";
+  // Pas encore de mois (ancien cache) : vue weekend en attendant, puis retour a la vue mois
+  if (S.mode === "month" && !ms.length) { S.mode = "weekend"; S.auto = true; }
+  else if (S.auto && ms.length) { S.mode = "month"; S.auto = false; }
   render();
 }
 try { var cached = JSON.parse(localStorage.getItem("wk-data") || "null"); if (cached) setData(cached); } catch (e) {}
