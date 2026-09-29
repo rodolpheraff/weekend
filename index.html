@@ -72,6 +72,17 @@ select.pill{appearance:none;-webkit-appearance:none;padding-right:26px;
 .search::placeholder{color:var(--ink3)}
 .count{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 16px 4px;font:500 12px/1.4 var(--mono);color:var(--ink3);letter-spacing:.02em}
 .count b{color:var(--amber2);font-weight:600}
+.tr{display:block;font:600 11px/1.2 var(--mono);margin-top:2px}
+.tr.down{color:var(--green)} .tr.up{color:#FF8A7A}
+.duo{display:block;font:500 11px/1.3 var(--mono);color:var(--ink2);margin-top:3px;white-space:nowrap}
+.facts{display:flex;flex-wrap:wrap;gap:4px 10px;margin-top:5px;font-size:12px;color:var(--ink2)}
+.card.done{opacity:.5}
+.links .on{color:var(--amber)}
+.bud{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:4px 12px}
+.bud div{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px}
+.bud div:last-child{border:0;font-weight:800}
+.bud span{color:var(--ink2)} .bud b{font:600 14px/1.3 var(--mono);white-space:nowrap}
+.bud div:last-child b{color:var(--amber);font-size:17px}
 .surprise{flex:none;border:1px solid var(--amber);background:none;color:var(--amber);border-radius:999px;padding:5px 11px;font:600 12px/1 var(--disp);cursor:pointer}
 
 /* cartes destination */
@@ -181,14 +192,18 @@ var MOISL = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "
 var JOURS = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"];
 var BOD = [44.8283, -0.7156];
 
-var S = { data: null, mode: "month", month: null, wk: null, fmt: "all", direct: false, max: 0, sort: "price", group: "none", view: "list", q: "" };
+var S = { data: null, mode: "month", month: null, wk: null, fmt: "all", direct: false, max: 0, sort: "price", group: "none", view: "list", q: "", down: false, favOnly: false, hideDone: false };
+var DAILY = 100; // depenses sur place pour 2 par jour en France (repas, sorties, transports), ajuste au niveau des prix du pays
+function loadSet(k) { try { return JSON.parse(localStorage.getItem(k) || "[]"); } catch (e) { return []; } }
+var FAV = loadSet("wk-fav"), DONE = loadSet("wk-done");
+function toggle(arr, k, v) { var i = arr.indexOf(v); if (i === -1) arr.push(v); else arr.splice(i, 1); try { localStorage.setItem(k, JSON.stringify(arr)); } catch (e) {} }
 try { Object.assign(S, JSON.parse(localStorage.getItem("wk-prefs") || "{}")); } catch (e) {}
 S.month = null; S.wk = null; S.q = "";
 var CUR = {};      // destinations affichees, par cle
 var MAP = null;
 
 function savePrefs() {
-  try { localStorage.setItem("wk-prefs", JSON.stringify({ mode: S.mode, fmt: S.fmt, direct: S.direct, max: S.max, sort: S.sort, group: S.group, view: S.view })); } catch (e) {}
+  try { localStorage.setItem("wk-prefs", JSON.stringify({ mode: S.mode, fmt: S.fmt, direct: S.direct, max: S.max, sort: S.sort, group: S.group, view: S.view, down: S.down, favOnly: S.favOnly, hideDone: S.hideDone })); } catch (e) {}
 }
 
 // ---------- dates ----------
@@ -304,25 +319,55 @@ function build() {
     if (!x.img && d.img) x.img = d.img;
     if (x.lat == null && d.lat != null) { x.lat = d.lat; x.lng = d.lng; }
     if (d.hotel != null && (x.hotel == null || d.hotel < x.hotel)) x.hotel = d.hotel;
-    x.opts.push({ label: r.label, out: r.out, ret: r.ret, price: d.price, duration: d.duration, stops: d.stops, airline: d.airline });
+    if (d.km != null) x.km = d.km;
+    x.opts.push({ label: r.label, out: r.out, ret: r.ret, price: d.price, prev: d.prev, duration: d.duration, stops: d.stops, airline: d.airline });
   });
   var q = norm(S.q);
   var list = Object.keys(by).map(function (k) { return by[k]; }).filter(function (x) {
+    if (S.favOnly && FAV.indexOf(x.city) === -1) return false;
+    if (S.hideDone && DONE.indexOf(x.city) !== -1) return false;
+    if (S.down && !x.opts.some(function (o) { return o.prev != null && o.price < o.prev; })) return false;
     return !q || norm(x.city + " " + x.country + " " + x.code + " " + x.opts.map(function (o) { return o.airline; }).join(" ")).indexOf(q) !== -1;
   });
   list.forEach(function (x) {
     x.best = Math.min.apply(null, x.opts.map(function (o) { return o.price; }));
     x.fast = Math.min.apply(null, x.opts.map(function (o) { return o.duration || 9999; }));
     x.cheap = x.opts.slice().sort(function (a, b) { return a.price - b.price; })[0];
+    x.budget = budget(x, x.cheap);
   });
   list.sort(function (a, b) {
     if (S.sort === "duration") return a.fast - b.fast || a.best - b.best;
     if (S.sort === "name") return a.city.localeCompare(b.city, "fr");
+    if (S.sort === "budget") return a.budget.total - b.budget.total;
     return a.best - b.best;
   });
   CUR = {};
   list.forEach(function (x) { CUR[x.key] = x; });
   return list;
+}
+
+// Budget pour 2 : vols x2 + hotel x nuits + depenses sur place ajustees au cout de la vie
+function costIdx(x) { return S.data.cost && S.data.cost[x.country]; }
+function daysBetween(a, b) { return Math.round((pd(b) - pd(a)) / 864e5); }
+function budget(x, o) {
+  var nights = Math.max(1, daysBetween(o.out, o.ret));
+  var idx = costIdx(x) || 100;
+  var b = { nights: nights, flights: o.price * 2, hotel: x.hotel ? x.hotel * nights : null, onsite: Math.round(DAILY * nights * idx / 100 / 10) * 10 };
+  b.total = b.flights + (b.hotel || 0) + b.onsite;
+  return b;
+}
+function trend(o) {
+  if (o.prev == null || Math.abs(o.price - o.prev) < 5) return "";
+  var d = o.price - o.prev;
+  return '<em class="tr ' + (d < 0 ? "down" : "up") + '">' + (d < 0 ? "↓ " : "↑ ") + Math.abs(Math.round(d)) + " €</em>";
+}
+function costTxt(x) {
+  var i = costIdx(x); if (!i) return "";
+  var d = i - 100;
+  return Math.abs(d) < 5 ? "prix comme en France" : (d < 0 ? Math.abs(d) + " % moins cher qu'en France" : d + " % plus cher qu'en France");
+}
+function transit(x) {
+  return "https://www.google.com/maps/dir/?api=1&origin=" + encodeURIComponent(x.code + " airport") + "&destination=" + encodeURIComponent(x.city + ", " + x.country) + "&travelmode=transit";
 }
 
 // ---------- rendu ----------
@@ -360,8 +405,11 @@ function renderCtrl() {
     '<div class="seg two"><button data-view="list" class="' + (S.view === "list" ? "on" : "") + '">☰ Liste</button><button data-view="map" class="' + (S.view === "map" ? "on" : "") + '">🗺️ Carte</button></div>' +
     '<div class="row2">' +
     '<button class="pill' + (S.direct ? " on" : "") + '" id="direct">' + (S.direct ? "✓ " : "") + "Direct</button>" +
+    '<button class="pill' + (S.down ? " on" : "") + '" id="down">📉 En baisse</button>' +
+    '<button class="pill' + (S.favOnly ? " on" : "") + '" id="favOnly">★ Favoris</button>' +
+    '<button class="pill' + (S.hideDone ? " on" : "") + '" id="hideDone">Masquer « déjà fait »</button>' +
     '<select class="pill' + (S.max ? " on" : "") + '" id="max">' + opts(bud, S.max) + "</select>" +
-    (S.view === "list" ? '<select class="pill' + (S.sort !== "price" ? " on" : "") + '" id="sort">' + opts([["price", "Moins cher"], ["duration", "Vol le plus court"], ["name", "A → Z"]], S.sort) + "</select>" +
+    (S.view === "list" ? '<select class="pill' + (S.sort !== "price" ? " on" : "") + '" id="sort">' + opts([["price", "Vol le moins cher"], ["budget", "Budget pour 2"], ["duration", "Vol le plus court"], ["name", "A → Z"]], S.sort) + "</select>" +
       '<select class="pill' + (S.group !== "none" ? " on" : "") + '" id="group">' + opts([["none", "Sans groupe"], ["country", "Par pays"], ["airline", "Par compagnie"]], S.group) + "</select>" : "") +
     '<input class="search" id="q" type="search" placeholder="Ville, pays ou compagnie" value="' + esc(S.q) + '"></div></div>';
 }
@@ -369,16 +417,23 @@ function renderCtrl() {
 function optRow(x, o, best) {
   var bits = [o.airline && esc(o.airline), stops(o.stops), dur(o.duration)].filter(Boolean).join(" · ");
   return '<a class="opt' + (best ? " best" : "") + '" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">' +
-    '<span class="l"><span class="f">' + o.label + '</span><span class="d">' + bits + '</span></span><span class="p">' + eur(o.price) + "</span></a>";
+    '<span class="l"><span class="f">' + o.label + '</span><span class="d">' + bits + '</span></span><span class="p">' + eur(o.price) + trend(o) + "</span></a>";
 }
 
 function card(x) {
   var opts = x.opts.map(function (o) { return optRow(x, o, o.price === x.best && x.opts.length > 1); }).join("");
   var s = sky(x, x.cheap.out, x.cheap.ret);
-  return '<article class="card" id="c-' + esc(x.key) + '"><div class="ph' + (x.img ? "" : " no") + '" data-dest="' + esc(x.key) + '"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + ">" +
+  var fav = FAV.indexOf(x.city) !== -1, done = DONE.indexOf(x.city) !== -1;
+  var ci = costIdx(x);
+  var facts = [x.hotel ? "🏨 " + eur(x.hotel) + "/nuit" : "", ci ? "💰 vie " + (ci < 100 ? "−" : "+") + Math.abs(ci - 100) + " %" : "", x.km != null ? "🚌 aéroport à " + x.km + " km" : ""].filter(Boolean);
+  return '<article class="card' + (done ? " done" : "") + '" id="c-' + esc(x.key) + '"><div class="ph' + (x.img ? "" : " no") + '" data-dest="' + esc(x.key) + '"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + ">" +
     (x.code ? '<span class="code">' + esc(x.code) + "</span>" : "") + '</div><div class="main">' +
-    '<div class="hd" data-dest="' + esc(x.key) + '"><div><h3>' + esc(x.city) + "</h3><p>" + esc(x.country) + (x.hotel ? " · 🏨 " + eur(x.hotel) + "/nuit" : "") + '</p></div><div class="px"><small>A/R dès</small><b>' + eur(x.best) + "</b></div></div>" +
-    '<div class="opts">' + opts + '</div><div class="links"><button data-dest="' + esc(x.key) + '">Météo, guide, hôtels ›</button>' +
+    '<div class="hd" data-dest="' + esc(x.key) + '"><div><h3>' + (fav ? "★ " : "") + esc(x.city) + "</h3><p>" + esc(x.country) + (done ? " · ✓ déjà fait" : "") + "</p>" +
+    '</div><div class="px"><small>A/R dès</small><b>' + eur(x.best) + '</b><span class="duo">à 2 ≈ ' + eur(x.budget.total) + "</span></div></div>" +
+    (facts.length ? '<div class="facts">' + facts.map(function (f) { return "<span>" + f + "</span>"; }).join("") + "</div>" : "") +
+    '<div class="opts">' + opts + '</div><div class="links"><button data-dest="' + esc(x.key) + '">Budget, météo, guide ›</button>' +
+    '<button class="' + (fav ? "on" : "") + '" data-fav="' + esc(x.city) + '">' + (fav ? "★ Favori" : "☆ Favori") + "</button>" +
+    '<button class="' + (done ? "on" : "") + '" data-done="' + esc(x.city) + '">' + (done ? "✓ Déjà fait" : "Déjà fait ?") + "</button>" +
     (s ? '<a href="' + s + '" target="_blank" rel="noopener">Skyscanner</a>' : "") + "</div></div></article>";
 }
 
@@ -462,18 +517,33 @@ var WMO = function (c) {
   return c === 0 ? "☀️" : c <= 2 ? "🌤️" : c === 3 ? "☁️" : c <= 48 ? "🌫️" : c <= 57 ? "🌦️" : c <= 67 ? "🌧️" : c <= 77 ? "❄️" : c <= 82 ? "🌦️" : c <= 86 ? "🌨️" : "⛈️";
 };
 
+var SHEET = null;
 function openSheet(key) {
   var x = CUR[key]; if (!x) return;
+  SHEET = key;
   var o = x.cheap;
   var el = document.getElementById("sheet");
   el.innerHTML = '<div class="sheet-bg" id="sheet-bg"><div class="sheet" role="dialog" aria-label="' + esc(x.city) + '">' +
     '<div class="hero"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + '><button class="x" id="close" aria-label="Fermer">✕</button></div>' +
     '<div class="sh"><h2>' + esc(x.city) + '</h2><div class="ctry">' + esc(x.country) + (x.code ? " · " + esc(x.code) : "") + "</div></div>" +
     '<div class="sec"><h4>Vols</h4><div class="opts">' + x.opts.map(function (p) { return optRow(x, p, p === o && x.opts.length > 1); }).join("") + "</div></div>" +
+    '<div class="sec"><h4>Budget pour 2 · ' + x.budget.nights + (x.budget.nights > 1 ? " nuits" : " nuit") + '</h4><div class="bud">' +
+      "<div><span>Vols A/R × 2</span><b>" + eur(x.budget.flights) + "</b></div>" +
+      "<div><span>Hôtel · " + x.budget.nights + " × " + (x.hotel ? eur(x.hotel) : "?") + "</span><b>" + (x.budget.hotel != null ? eur(x.budget.hotel) : "prochain relevé") + "</b></div>" +
+      "<div><span>Sur place (repas, sorties, transports)</span><b>≈ " + eur(x.budget.onsite) + "</b></div>" +
+      "<div><span>Total</span><b>≈ " + eur(x.budget.total) + "</b></div></div>" +
+      '<p class="muted" style="margin:6px 0 0">Sur place : ' + DAILY + " € par jour à deux en France, ajusté au niveau des prix du pays" + (costIdx(x) ? " (" + costTxt(x) + ", Banque mondiale)" : "") + ". Hôtel : prix Google le plus bas.</p></div>" +
+    '<div class="sec"><h4>Sur place</h4><div class="facts" style="font-size:14px;gap:6px 14px">' +
+      (costIdx(x) ? "<span>💰 " + costTxt(x) + "</span>" : "") +
+      (x.km != null ? "<span>🚌 Aéroport " + esc(x.code) + " à " + x.km + " km du centre</span>" : "") + "</div>" +
+      '<div class="btns" style="margin-top:8px"><a class="btn" style="grid-column:1/-1" href="' + transit(x) + '" target="_blank" rel="noopener">Aéroport → centre en transports ↗</a></div></div>' +
+    '<div class="sec"><div class="btns"><button class="btn" data-fav="' + esc(x.city) + '">' + (FAV.indexOf(x.city) !== -1 ? "★ Favori" : "☆ Favori") + "</button>" +
+      '<button class="btn" data-done="' + esc(x.city) + '">' + (DONE.indexOf(x.city) !== -1 ? "✓ Déjà fait" : "Déjà fait ?") + "</button></div></div>" +
     '<div class="sec"><h4>Météo · ' + dayM(o.out) + " → " + dayM(o.ret) + '</h4><div id="wx" class="muted">Chargement…</div></div>' +
     '<div class="sec"><h4>Le coin</h4><div id="guide" class="guide muted">Chargement…</div></div>' +
     '<div class="sec"><h4>Dormir · ' + dm(o.out) + " → " + dm(o.ret) + ' · 2 pers.</h4>' +
     (x.hotel ? '<p class="muted" style="margin:0 0 8px">Hôtels dès <b style="color:var(--ink)">' + eur(x.hotel) + "</b> la nuit selon Google.</p>" : "") + '<div class="btns">' +
+    '<a class="btn" style="grid-column:1/-1" href="https://www.google.com/travel/search?q=' + encodeURIComponent("hôtels " + x.city) + '&hl=fr&curr=EUR" target="_blank" rel="noopener">Hôtels sur Google ↗</a>' +
     '<a class="btn" href="' + booking(x, o.out, o.ret) + '" target="_blank" rel="noopener">Booking ↗</a>' +
     '<a class="btn" href="' + airbnb(x, o.out, o.ret) + '" target="_blank" rel="noopener">Airbnb ↗</a></div></div>' +
     '<div class="sec"><div class="btns"><a class="btn main" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">Voir les vols sur Google Flights ↗</a>' +
@@ -561,8 +631,16 @@ function loadGuide(x) {
 // ---------- evenements ----------
 document.addEventListener("click", function (e) {
   if (e.target.id === "sheet-bg" || e.target.closest("#close")) { closeSheet(); return; }
-  var t = e.target.closest("[data-wk],[data-month],[data-mode],[data-fmt],[data-view],[data-dest],#direct,#surprise");
+  var t = e.target.closest("[data-wk],[data-month],[data-mode],[data-fmt],[data-view],[data-dest],[data-fav],[data-done],#direct,#down,#favOnly,#hideDone,#surprise");
   if (!t) return;
+  if (t.dataset.fav || t.dataset.done) {
+    if (t.dataset.fav) toggle(FAV, "wk-fav", t.dataset.fav); else toggle(DONE, "wk-done", t.dataset.done);
+    var open = document.querySelector(".sheet-bg") ? SHEET : null;
+    var y = window.scrollY;
+    render(); window.scrollTo(0, y);
+    if (open && CUR[open]) openSheet(open);
+    return;
+  }
   if (t.dataset.dest) { openSheet(t.dataset.dest); return; }
   if (t.id === "surprise") {
     var keys = Object.keys(CUR);
@@ -579,6 +657,9 @@ document.addEventListener("click", function (e) {
   if (t.dataset.fmt) S.fmt = t.dataset.fmt;
   if (t.dataset.view) S.view = t.dataset.view;
   if (t.id === "direct") S.direct = !S.direct;
+  if (t.id === "down") S.down = !S.down;
+  if (t.id === "favOnly") S.favOnly = !S.favOnly;
+  if (t.id === "hideDone") S.hideDone = !S.hideDone;
   savePrefs(); render();
 });
 document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });

@@ -76,10 +76,26 @@ async function main() {
     if (ym < today.slice(0, 7)) delete data.months[ym];
   }
 
-  if (!KEY) {
-    console.log("::warning::Secret SERPAPI_KEY absent : aucune donnee recuperee.");
-    return;
+  if (KEY) await fetchPrices(data);
+  else console.log("::warning::Secret SERPAPI_KEY absent : pas de nouveaux prix, enrichissement seul.");
+
+  await enrich(data);
+  data.weekends = Object.fromEntries(Object.entries(data.weekends).sort(([a], [b]) => a.localeCompare(b)));
+  data.months = Object.fromEntries(Object.entries(data.months).sort(([a], [b]) => a.localeCompare(b)));
+  await writeFile(FILE, JSON.stringify(data, null, 1) + "\n");
+}
+
+// Garde le prix du releve precedent pour afficher la tendance
+function withPrev(dests, old) {
+  const prev = new Map((old?.dests || []).map((d) => [d.code || d.city, d.price]));
+  for (const d of dests) {
+    const p = prev.get(d.code || d.city);
+    if (p != null) d.prev = p;
   }
+  return dests;
+}
+
+async function fetchPrices(data) {
 
   // Quota restant (cet appel n'est pas decompte)
   let left = Infinity;
@@ -134,11 +150,12 @@ async function main() {
         if (r.destinations?.[0]) console.log("Exemple brut :", JSON.stringify(r.destinations[0]).slice(0, 600));
         const all = dests.length;
         dests = dests.filter((d) => d.out && d.ret);
-        data.months[j.ym] = { fetched, dests };
+        data.months[j.ym] = { fetched, dests: withPrev(dests, data.months[j.ym]) };
         console.log(`${j.ym} : ${dests.length} destinations (${all} brutes)`);
       } else {
         dests.forEach((d) => { delete d.out; delete d.ret; });
-        (data.weekends[j.fri] ||= {})[j.f.id] = { out: j.out, ret: j.ret, fetched, dests };
+        const w = (data.weekends[j.fri] ||= {});
+        w[j.f.id] = { out: j.out, ret: j.ret, fetched, dests: withPrev(dests, w[j.f.id]) };
         console.log(`${what} : ${dests.length} destinations`);
       }
     } catch (e) {
@@ -147,13 +164,67 @@ async function main() {
     }
   }
 
-  // Tri des weekends par date
-  data.weekends = Object.fromEntries(Object.entries(data.weekends).sort(([a], [b]) => a.localeCompare(b)));
-  data.months = Object.fromEntries(Object.entries(data.months).sort(([a], [b]) => a.localeCompare(b)));
   if (done) data.updated = new Date().toISOString();
   if (Number.isFinite(left)) data.searchesLeft = left - done;
-  await writeFile(FILE, JSON.stringify(data, null, 1) + "\n");
   console.log("Requetes utilisees :", done);
+}
+
+// ---------- enrichissement gratuit (sans SerpApi) ----------
+
+// Niveau des prix par pays (Banque mondiale, ratio PPA / taux de change), France = 100,
+// et distance aeroport -> centre-ville (coordonnees OurAirports)
+async function enrich(data) {
+  const all = [...Object.values(data.months), ...Object.values(data.weekends).flatMap((w) => Object.values(w))].flatMap((c) => c.dests);
+
+  try {
+    // niveau des prix = PPA de la consommation des menages / taux de change (monnaie locale par dollar)
+    const wb = async (ind) => {
+      const res = await fetch(`https://api.worldbank.org/v2/country/all/indicator/${ind}?format=json&per_page=400&mrnev=1`);
+      const out = {};
+      for (const r of (await res.json())[1] || []) if (r.value != null) out[r.country.id] = r.value;
+      return out;
+    };
+    const [ppp, fx] = await Promise.all([wb("PA.NUS.PRVT.PP"), wb("PA.NUS.FCRF")]);
+    const names = new Intl.DisplayNames(["fr"], { type: "region" });
+    const byName = {};
+    for (const id of Object.keys(ppp)) {
+      if (!/^[A-Z]{2}$/.test(id) || !fx[id]) continue;
+      try { byName[names.of(id)] = ppp[id] / fx[id]; } catch {}
+    }
+    const fr = byName.France;
+    const cost = {};
+    const missing = new Set();
+    for (const d of all) {
+      const v = byName[d.country];
+      if (v != null && fr) cost[d.country] = Math.round((v / fr) * 100);
+      else if (d.country) missing.add(d.country);
+    }
+    data.cost = cost;
+    console.log("Cout de la vie :", Object.keys(cost).length, "pays", missing.size ? "| sans donnee : " + [...missing].join(", ") : "");
+  } catch (e) {
+    console.log("::warning::Banque mondiale : " + e.message);
+  }
+
+  try {
+    const csv = await (await fetch("https://davidmegginson.github.io/ourairports-data/airports.csv")).text();
+    const need = new Set(all.map((d) => d.code).filter(Boolean));
+    const apt = {};
+    for (const line of csv.split("\n")) {
+      const c = line.match(/("([^"]*)"|[^,]*)(,|$)/g)?.map((x) => x.replace(/,$/, "").replace(/^"|"$/g, ""));
+      if (c && need.has(c[13])) apt[c[13]] = [Number(c[4]), Number(c[5])];
+    }
+    const km = (a, b) => {
+      const R = 6371, t = Math.PI / 180;
+      const h = Math.sin(((b[0] - a[0]) * t) / 2) ** 2 + Math.cos(a[0] * t) * Math.cos(b[0] * t) * Math.sin(((b[1] - a[1]) * t) / 2) ** 2;
+      return Math.round(2 * R * Math.asin(Math.sqrt(h)));
+    };
+    for (const d of all) {
+      if (apt[d.code] && d.lat != null) d.km = km(apt[d.code], [d.lat, d.lng]);
+    }
+    console.log("Aeroports localises :", Object.keys(apt).length, "/", need.size);
+  } catch (e) {
+    console.log("::warning::OurAirports : " + e.message);
+  }
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
