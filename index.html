@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B1B2B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Weekend">
+<title>Partir ce weekend</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0B1B2B; --bg2:#0F2336; --card:#132B41; --card2:#183450; --line:#22425F;
+  --ink:#EEF3F7; --ink2:#9CB1C4; --ink3:#6E879C;
+  --amber:#FFB81C; --amber2:#FFD983; --green:#43D98F;
+  --disp:"Bricolage Grotesque",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--disp);-webkit-font-smoothing:antialiased}
+body{min-height:100vh;padding-bottom:calc(30px + env(safe-area-inset-bottom))}
+button,input,select{font:inherit;color:inherit}
+a{color:inherit}
+.wrap{max-width:720px;margin:0 auto}
+
+/* en-tete facon tableau des departs */
+header{padding:calc(20px + env(safe-area-inset-top)) 16px 14px;
+  background:radial-gradient(120% 90% at 100% 0%,rgba(255,184,28,.16),transparent 60%),var(--bg)}
+.board{display:flex;gap:8px;align-items:center;font:600 11px/1 var(--mono);letter-spacing:.14em;color:var(--amber);text-transform:uppercase}
+.board i{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+h1{margin:10px 0 4px;font-weight:800;font-size:clamp(30px,8vw,44px);line-height:1;letter-spacing:-.02em}
+h1 em{font-style:normal;color:var(--amber)}
+.sub{margin:0;color:var(--ink2);font-size:14px}
+
+/* weekends */
+.rail{position:sticky;top:0;z-index:20;display:flex;gap:8px;overflow-x:auto;padding:10px 16px;
+  background:rgba(11,27,43,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line);scrollbar-width:none}
+.rail::-webkit-scrollbar{display:none}
+.wk{flex:none;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:7px 12px 8px;text-align:left;cursor:pointer;min-width:92px}
+.wk b{display:block;font-weight:600;font-size:15px;white-space:nowrap}
+.wk span{display:block;font:500 11px/1.3 var(--mono);color:var(--ink3);margin-top:2px;white-space:nowrap}
+.wk.on{background:var(--amber);border-color:var(--amber);color:#1B1300}
+.wk.on span{color:#5A4200}
+.wk.cal{position:relative;display:flex;align-items:center;gap:6px;color:var(--ink2);min-width:0}
+.wk.cal input{position:absolute;inset:0;opacity:0;width:100%;height:100%;cursor:pointer}
+
+/* commandes */
+.ctrl{padding:14px 16px 4px;display:grid;gap:10px}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:3px}
+.seg button{border:0;background:none;border-radius:9px;padding:8px 2px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer;white-space:nowrap}
+.seg button.on{background:var(--card2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
+.pill.on{border-color:var(--green);color:var(--green)}
+select.pill{appearance:none;-webkit-appearance:none;padding-right:26px;
+  background:var(--bg2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239CB1C4' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center}
+.search{flex:1 1 160px;min-width:0;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:7px 14px;font-size:16px}
+.search::placeholder{color:var(--ink3)}
+.count{padding:8px 16px 4px;font:500 12px/1.4 var(--mono);color:var(--ink3);letter-spacing:.02em}
+.count b{color:var(--amber2);font-weight:600}
+
+/* cartes destination */
+.list{display:grid;gap:10px;padding:6px 16px}
+.card{display:grid;grid-template-columns:78px 1fr;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.ph{position:relative;background:var(--card2) center/cover no-repeat}
+.ph.no .code{left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);font-size:15px;background:none}
+.ph .code{position:absolute;left:6px;bottom:6px;font:600 11px/1 var(--mono);letter-spacing:.08em;background:rgba(11,27,43,.85);color:var(--amber);padding:4px 5px;border-radius:5px}
+.main{padding:11px 12px 10px;min-width:0}
+.hd{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.hd h3{margin:0;font-size:18px;font-weight:800;line-height:1.1;letter-spacing:-.01em}
+.hd p{margin:2px 0 0;color:var(--ink3);font-size:13px}
+.px{text-align:right;flex:none}
+.px small{display:block;font:500 10px/1 var(--mono);color:var(--ink3);text-transform:uppercase;letter-spacing:.1em}
+.px b{font:600 22px/1.1 var(--mono);color:var(--amber)}
+.opts{margin-top:8px;display:grid;gap:4px}
+.opt{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;text-decoration:none;background:var(--bg2);border-radius:9px;padding:6px 10px;font-size:13px}
+.opt .l{min-width:0;display:grid;gap:1px}
+.opt:active{background:var(--card2)}
+.opt .f{font:600 11px/1.2 var(--mono);color:var(--ink2);letter-spacing:.02em}
+.opt .d{color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.opt .d .dir{color:var(--green)}
+.opt .p{font:600 14px/1 var(--mono)}
+.opt.best .p{color:var(--amber)}
+.links{display:flex;gap:14px;margin-top:8px;font-size:12px;font-weight:600}
+.links a{color:var(--ink2);text-decoration:none}
+.links a::after{content:" ↗"}
+
+/* etats */
+.empty{margin:18px 16px;padding:18px;border:1px dashed var(--line);border-radius:16px;color:var(--ink2);font-size:14px}
+.empty h2{margin:0 0 6px;color:var(--ink);font-size:18px}
+.empty a{color:var(--amber)}
+.empty ol{margin:8px 0 0;padding-left:20px}
+footer{padding:18px 16px 0;color:var(--ink3);font-size:12px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="board"><i></i>Départs · BOD · Bordeaux-Mérignac</div>
+    <h1>Où on part<br><em>ce weekend</em> ?</h1>
+    <p class="sub">Toutes les destinations, toutes les compagnies, prix Google Flights.</p>
+  </header>
+  <nav class="rail" id="rail"></nav>
+  <div id="app"></div>
+  <footer id="foot"></footer>
+</div>
+
+<script>
+var FORMATS = [
+  { id: "ven-dim", label: "Ven → Dim" },
+  { id: "sam-dim", label: "Sam → Dim" },
+  { id: "ven-lun", label: "Ven → Lun" }
+];
+var BUDGETS = [0, 80, 120, 150, 200, 300];
+var MOIS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
+
+var S = { data: null, wk: null, fmt: "all", direct: false, max: 0, sort: "price", q: "" };
+try { Object.assign(S, JSON.parse(localStorage.getItem("wk-prefs") || "{}")); } catch (e) {}
+S.wk = null; S.q = "";
+
+function savePrefs() {
+  try { localStorage.setItem("wk-prefs", JSON.stringify({ fmt: S.fmt, direct: S.direct, max: S.max, sort: S.sort })); } catch (e) {}
+}
+
+// ---------- dates ----------
+function pd(s) { var p = s.split("-"); return new Date(Date.UTC(+p[0], +p[1] - 1, +p[2])); }
+function iso(d) { return d.toISOString().slice(0, 10); }
+function add(s, n) { var d = pd(s); d.setUTCDate(d.getUTCDate() + n); return iso(d); }
+function today() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date()); }
+function fridayOf(s) {
+  var dow = pd(s).getUTCDay();
+  if (dow === 6) return add(s, -1);
+  if (dow === 0) return add(s, -2);
+  return add(s, 5 - dow);
+}
+function wkLabel(fri) {
+  var sa = pd(add(fri, 1)), su = pd(add(fri, 2));
+  return sa.getUTCMonth() === su.getUTCMonth()
+    ? sa.getUTCDate() + "-" + su.getUTCDate() + " " + MOIS[su.getUTCMonth()]
+    : sa.getUTCDate() + " " + MOIS[sa.getUTCMonth()] + " - " + su.getUTCDate() + " " + MOIS[su.getUTCMonth()];
+}
+function dm(s) { var d = pd(s); return d.getUTCDate() + "/" + String(d.getUTCMonth() + 1).padStart(2, "0"); }
+function yymmdd(s) { return s.slice(2, 4) + s.slice(5, 7) + s.slice(8, 10); }
+
+// ---------- formats ----------
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+function norm(s) { return String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+function eur(n) { return Math.round(n) + " €"; }
+function dur(m) { if (!m) return ""; var h = Math.floor(m / 60), mn = m % 60; return h ? h + " h" + (mn ? " " + String(mn).padStart(2, "0") : "") : mn + " min"; }
+function stops(n) { return n === 0 ? '<span class="dir">Direct</span>' : n == null ? "" : n + (n > 1 ? " escales" : " escale"); }
+function gf(dest, out, ret) {
+  var to = dest.code || dest.city;
+  return "https://www.google.com/travel/flights?hl=fr&curr=EUR&q=" + encodeURIComponent("Flights from BOD to " + to + " on " + out + " through " + ret);
+}
+function sky(dest, out, ret) {
+  if (!dest.code) return null;
+  return "https://www.skyscanner.fr/transport/vols/bod/" + dest.code.toLowerCase() + "/" + yymmdd(out) + "/" + yymmdd(ret) + "/";
+}
+function skyAll(fri) { return "https://www.skyscanner.fr/transport/vols-depuis/bod/" + yymmdd(fri) + "/" + yymmdd(add(fri, 2)) + "/"; }
+
+// ---------- donnees ----------
+function weekends() {
+  if (!S.data) return [];
+  var t = today();
+  return Object.keys(S.data.weekends || {}).filter(function (f) { return add(f, 3) >= t; }).sort();
+}
+function minPrice(w) {
+  var m = Infinity;
+  FORMATS.forEach(function (f) { var c = w[f.id]; if (c && c.dests.length) m = Math.min(m, c.dests[0].price); });
+  return m;
+}
+function build(w) {
+  var by = {};
+  FORMATS.forEach(function (f) {
+    if (S.fmt !== "all" && S.fmt !== f.id) return;
+    var c = w[f.id]; if (!c) return;
+    c.dests.forEach(function (d) {
+      if (S.direct && d.stops !== 0) return;
+      if (S.max && d.price > S.max) return;
+      var k = d.code || d.city;
+      var x = by[k] || (by[k] = { city: d.city, country: d.country, code: d.code, img: d.img, opts: [] });
+      if (!x.img && d.img) x.img = d.img;
+      x.opts.push({ fmt: f, out: c.out, ret: c.ret, price: d.price, duration: d.duration, stops: d.stops, airline: d.airline });
+    });
+  });
+  var q = norm(S.q);
+  var list = Object.keys(by).map(function (k) { return by[k]; }).filter(function (x) {
+    return !q || norm(x.city + " " + x.country + " " + x.code).indexOf(q) !== -1;
+  });
+  list.forEach(function (x) {
+    x.best = Math.min.apply(null, x.opts.map(function (o) { return o.price; }));
+    x.fast = Math.min.apply(null, x.opts.map(function (o) { return o.duration || 9999; }));
+  });
+  list.sort(function (a, b) {
+    if (S.sort === "duration") return a.fast - b.fast || a.best - b.best;
+    if (S.sort === "name") return a.city.localeCompare(b.city, "fr");
+    return a.best - b.best;
+  });
+  return list;
+}
+
+// ---------- rendu ----------
+function renderRail() {
+  var ws = weekends();
+  var html = ws.map(function (f) {
+    var m = minPrice(S.data.weekends[f]);
+    return '<button class="wk' + (f === S.wk ? " on" : "") + '" data-wk="' + f + '"><b>' + wkLabel(f) + "</b><span>" +
+      (isFinite(m) ? "dès " + eur(m) : "—") + "</span></button>";
+  }).join("");
+  if (S.wk && ws.indexOf(S.wk) === -1) {
+    html += '<button class="wk on" data-wk="' + S.wk + '"><b>' + wkLabel(S.wk) + "</b><span>pas de prix</span></button>";
+  }
+  html += '<label class="wk cal" title="Choisir une date">📅<b>Autre date</b><input type="date" id="cal" min="' + today() + '"></label>';
+  document.getElementById("rail").innerHTML = html;
+}
+
+function renderCtrl() {
+  var seg = [{ id: "all", label: "Tous" }].concat(FORMATS).map(function (f) {
+    return '<button data-fmt="' + f.id + '" class="' + (S.fmt === f.id ? "on" : "") + '">' + f.label + "</button>";
+  }).join("");
+  var bud = BUDGETS.map(function (b) {
+    return '<option value="' + b + '"' + (S.max === b ? " selected" : "") + ">" + (b ? "≤ " + b + " €" : "Tout budget") + "</option>";
+  }).join("");
+  var tri = [["price", "Moins cher"], ["duration", "Vol le plus court"], ["name", "A → Z"]].map(function (t) {
+    return '<option value="' + t[0] + '"' + (S.sort === t[0] ? " selected" : "") + ">" + t[1] + "</option>";
+  }).join("");
+  return '<div class="ctrl"><div class="seg">' + seg + '</div><div class="row2">' +
+    '<button class="pill' + (S.direct ? " on" : "") + '" id="direct">' + (S.direct ? "✓ " : "") + "Direct</button>" +
+    '<select class="pill" id="max">' + bud + "</select>" +
+    '<select class="pill" id="sort">' + tri + "</select>" +
+    '<input class="search" id="q" type="search" placeholder="Ville ou pays" value="' + esc(S.q) + '"></div></div>';
+}
+
+function card(x) {
+  var opts = x.opts.map(function (o) {
+    var bits = [o.airline && esc(o.airline), stops(o.stops), dur(o.duration)].filter(Boolean).join(" · ");
+    return '<a class="opt' + (o.price === x.best && x.opts.length > 1 ? " best" : "") + '" href="' + gf(x, o.out, o.ret) + '" target="_blank" rel="noopener">' +
+      '<span class="l"><span class="f">' + o.fmt.label + " · " + dm(o.out) + " → " + dm(o.ret) + '</span><span class="d">' + bits + '</span></span><span class="p">' + eur(o.price) + "</span></a>";
+  }).join("");
+  var first = x.opts.slice().sort(function (a, b) { return a.price - b.price; })[0];
+  var s = sky(x, first.out, first.ret);
+  return '<article class="card"><div class="ph' + (x.img ? "" : " no") + '"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + ">" +
+    (x.code ? '<span class="code">' + esc(x.code) + "</span>" : "") + '</div><div class="main">' +
+    '<div class="hd"><div><h3>' + esc(x.city) + "</h3><p>" + esc(x.country) + '</p></div><div class="px"><small>A/R dès</small><b>' + eur(x.best) + "</b></div></div>" +
+    '<div class="opts">' + opts + '</div><div class="links"><a href="' + gf(x, first.out, first.ret) + '" target="_blank" rel="noopener">Google Flights</a>' +
+    (s ? '<a href="' + s + '" target="_blank" rel="noopener">Skyscanner</a>' : "") + "</div></div></article>";
+}
+
+function render() {
+  renderRail();
+  var app = document.getElementById("app");
+  var foot = document.getElementById("foot");
+  var ws = weekends();
+
+  if (!S.data || !ws.length && !S.wk) {
+    app.innerHTML = '<div class="empty"><h2>Pas encore de prix</h2>Les prix arrivent dès que le robot a tourné une première fois :' +
+      "<ol><li>Crée un compte gratuit sur <a href=\"https://serpapi.com/users/sign_up\" target=\"_blank\" rel=\"noopener\">serpapi.com</a> et copie ta clé API.</li>" +
+      "<li>Sur GitHub : repo <b>weekend</b> → Settings → Secrets and variables → Actions → New repository secret, nom <b>SERPAPI_KEY</b>.</li>" +
+      "<li>Onglet Actions → « Vols et publication » → Run workflow.</li></ol></div>";
+    foot.innerHTML = "";
+    return;
+  }
+
+  var w = S.data.weekends[S.wk];
+  if (!w) {
+    app.innerHTML = '<div class="empty"><h2>Weekend du ' + wkLabel(S.wk) + "</h2>Pas de prix relevés pour ce weekend : l'app couvre les 8 prochains. " +
+      'Tu peux voir toutes les destinations sur <a href="' + skyAll(S.wk) + '" target="_blank" rel="noopener">Skyscanner « Partout »</a> (ven → dim).</div>';
+  } else {
+    var list = build(w);
+    var n = list.reduce(function (a, x) { return a + x.opts.length; }, 0);
+    var cheapest = Math.min.apply(null, list.map(function (x) { return x.best; }));
+    app.innerHTML = renderCtrl() +
+      '<div class="count"><b>' + list.length + "</b> destinations · " + n + " options" + (list.length ? " · dès <b>" + eur(cheapest) + "</b>" : "") + "</div>" +
+      (list.length ? '<div class="list">' + list.map(card).join("") + "</div>"
+        : '<div class="empty">Aucune destination avec ces filtres.</div>');
+  }
+
+  var up = S.data.updated ? new Date(S.data.updated) : null;
+  foot.innerHTML = "Prix Google Flights, aller-retour pour 1 adulte en classe éco, meilleure option par destination. " +
+    "Touche une ligne pour voir tous les vols et horaires sur Google Flights, et vérifie le prix avant de réserver." +
+    (up ? "<br>Relevé le " + up.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "") +
+    (S.data.searchesLeft != null ? " · " + S.data.searchesLeft + " recherches gratuites restantes ce mois" : "");
+}
+
+// ---------- evenements ----------
+document.addEventListener("click", function (e) {
+  var t = e.target.closest("[data-wk],[data-fmt],#direct");
+  if (!t) return;
+  if (t.dataset.wk) { S.wk = t.dataset.wk; render(); window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+  if (t.dataset.fmt) S.fmt = t.dataset.fmt;
+  if (t.id === "direct") S.direct = !S.direct;
+  savePrefs(); render();
+});
+document.addEventListener("change", function (e) {
+  if (e.target.id === "max") { S.max = +e.target.value; savePrefs(); render(); }
+  if (e.target.id === "sort") { S.sort = e.target.value; savePrefs(); render(); }
+  if (e.target.id === "cal" && e.target.value) { S.wk = fridayOf(e.target.value); render(); }
+});
+document.addEventListener("input", function (e) {
+  if (e.target.id !== "q") return;
+  S.q = e.target.value;
+  var pos = e.target.selectionStart;
+  render();
+  var q = document.getElementById("q");
+  q.focus(); q.setSelectionRange(pos, pos);
+});
+
+// ---------- chargement ----------
+function setData(d) {
+  S.data = d;
+  var ws = weekends();
+  if (!S.wk || !S.data.weekends[S.wk]) S.wk = ws[0] || null;
+  render();
+}
+try { var cached = JSON.parse(localStorage.getItem("wk-data") || "null"); if (cached) setData(cached); } catch (e) {}
+fetch("data/weekends.json?t=" + Date.now()).then(function (r) { return r.json(); }).then(function (d) {
+  try { localStorage.setItem("wk-data", JSON.stringify(d)); } catch (e) {}
+  setData(d);
+}).catch(function () { if (!S.data) render(); });
+
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("service-worker.js").catch(function () {});
+</script>
+</body>
+</html>
