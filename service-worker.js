@@ -1,4 +1,4 @@
-var VERSION = "v1";
+var VERSION = "v2";
 var CACHE = "weekend-" + VERSION;
 var ASSETS = ["./", "index.html", "manifest.json", "icons/icon-192.png", "icons/icon-512.png"];
 
@@ -19,6 +19,8 @@ self.addEventListener("activate", function (e) {
 self.addEventListener("fetch", function (e) {
   if (e.request.method !== "GET") return;
   var url = new URL(e.request.url);
+  // Tuiles de carte, meteo, guides : toujours le reseau
+  if (/openstreetmap|open-meteo|wiki/.test(url.hostname)) return;
 
   // Page et donnees de vols : reseau d'abord, cache si hors ligne
   if (e.request.mode === "navigate" || url.pathname.indexOf("/data/") !== -1) {

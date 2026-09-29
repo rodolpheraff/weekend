@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
   schedule:
-    # lundi et jeudi a 3h UTC : ~24 requetes x 9 passages = ~210 / mois (quota gratuit 250)
+    # lundi et jeudi a 3h UTC : 6 mois + 6 weekends x 3 formats = 24 requetes x ~9 passages = ~210 / mois (quota gratuit 250)
     - cron: "0 3 * * 1,4"
   workflow_dispatch:
 
