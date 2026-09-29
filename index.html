@@ -146,7 +146,9 @@ a.opt:active{background:var(--card2)}
 @keyframes up{from{transform:translateY(40px);opacity:0}}
 .hero{position:relative;height:190px;background:var(--card2) center/cover no-repeat}
 .hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,27,43,0) 30%,var(--bg))}
-.hero .x{position:absolute;right:12px;top:12px;z-index:2;width:36px;height:36px;border-radius:50%;border:0;background:rgba(11,27,43,.8);color:var(--ink);font-size:18px}
+/* croix toujours visible : barre collante de hauteur nulle au-dessus du contenu */
+.xbar{position:sticky;top:0;height:0;z-index:5;display:flex;justify-content:flex-end}
+.xbar .x{margin:12px 12px 0 0;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.15);background:rgba(11,27,43,.85);color:var(--ink);font-size:18px;box-shadow:0 4px 14px rgba(0,0,0,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
 .sh{position:relative;z-index:1;margin-top:-54px;padding:0 16px;display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
 .sh h2{margin:0;font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em}
 .sh .ctry{color:var(--ink2);margin-top:4px}
@@ -582,7 +584,8 @@ function openSheet(key) {
   var el = document.getElementById("sheet");
   var s = sky(x, o.out, o.ret);
   el.innerHTML = '<div class="sheet-bg" id="sheet-bg"><div class="sheet" role="dialog" aria-label="' + esc(x.city) + '">' +
-    '<div class="hero"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + '><button class="x" id="close" aria-label="Fermer">✕</button></div>' +
+    '<div class="xbar"><button class="x" id="close" aria-label="Fermer">✕</button></div>' +
+    '<div class="hero"' + (x.img ? ' style="background-image:url(\'' + esc(x.img) + '\')"' : "") + "></div>" +
     '<div class="sh"><div><h2>' + esc(x.city) + '</h2><div class="ctry">' + esc(x.country) + (x.code ? " · " + esc(x.code) : "") + "</div></div>" + icons(x) + "</div>" +
 
     '<div class="sec"><h4>Vols · touche pour voir les horaires</h4><div class="opts">' +

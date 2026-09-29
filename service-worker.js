@@ -1,4 +1,4 @@
-var VERSION = "v6";
+var VERSION = "v7";
 var CACHE = "weekend-" + VERSION;
 var ASSETS = ["./", "index.html", "manifest.json", "icons/icon-192.png", "icons/icon-512.png"];
 
