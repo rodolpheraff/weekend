@@ -9,7 +9,8 @@ import { readFile, writeFile } from "node:fs/promises";
 const KEY = process.env.SERPAPI_KEY;
 const ORIGIN = "BOD";
 const WEEKENDS = 12;          // weekends couverts en dates precises (~3 mois)
-const ALWAYS = 2;             // les N prochains weekends sont rafraichis a chaque passage
+const SKIP = 1;               // weekends proches ignores (le weekend en cours / a venir)
+const ALWAYS = 1;             // les N premiers weekends couverts sont rafraichis a chaque passage
 const WEEKEND_BUDGET = 44;    // requetes "weekend" par passage ; les autres weekends tournent (plus anciens d'abord)
 const MONTHS = 6;             // mois couverts en mode flexible (1 requete chacun), limite Google = 6 mois glissants
 const RESERVE = 5;            // requetes gardees en reserve sur le quota du mois
@@ -30,12 +31,12 @@ const addDays = (s, n) => { const d = new Date(s + "T00:00:00Z"); d.setUTCDate(d
 // Aujourd'hui a Paris
 const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(new Date());
 
-// Vendredi du weekend en cours (sam/dim) ou a venir (lun-ven)
+// Vendredi du premier weekend couvert : on saute le weekend en cours / a venir (SKIP),
+// le but est de s'organiser a l'avance
 function firstFriday() {
   const dow = new Date(today + "T00:00:00Z").getUTCDay();
-  if (dow === 6) return addDays(today, -1);
-  if (dow === 0) return addDays(today, -2);
-  return addDays(today, 5 - dow);
+  const cur = dow === 6 ? addDays(today, -1) : dow === 0 ? addDays(today, -2) : addDays(today, 5 - dow);
+  return addDays(cur, 7 * SKIP);
 }
 
 async function serp(params) {
@@ -76,7 +77,7 @@ async function main() {
   const ids = new Set(COMBOS.map((c) => c.id));
   const lastFri = addDays(firstFriday(), 7 * (WEEKENDS - 1));
   for (const fri of Object.keys(data.weekends)) {
-    if (addDays(fri, 4) < today || fri > lastFri) { delete data.weekends[fri]; continue; }
+    if (fri < firstFriday() || fri > lastFri) { delete data.weekends[fri]; continue; }
     // combinaisons d'un ancien reglage
     for (const id of Object.keys(data.weekends[fri])) if (!ids.has(id)) delete data.weekends[fri][id];
   }

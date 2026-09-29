@@ -206,6 +206,7 @@ footer{padding:18px 16px 0;color:var(--ink3);font-size:12px;line-height:1.5}
 
 <script>
 var WEEKENDS = 12;   // weekends couverts par le robot (cf scripts/fetch.mjs)
+var SKIP = 1;        // weekend en cours / a venir ignore
 var DAILY = 100;     // depenses sur place pour 2 par jour en France (repas, sorties, transports)
 var BUDGETS = [80, 120, 150, 200, 300];
 var MOIS = ["janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.", "nov.", "déc."];
@@ -250,7 +251,7 @@ function fridayOf(s) {
   return add(s, 5 - d);
 }
 function fridays() {
-  var f = fridayOf(today()), out = [];
+  var f = add(fridayOf(today()), 7 * SKIP), out = [];
   for (var i = 0; i < WEEKENDS; i++) { out.push(f); f = add(f, 7); }
   return out;
 }
@@ -544,7 +545,7 @@ function render() {
   var up = S.data.updated ? new Date(S.data.updated) : null;
   foot.innerHTML = (S.mode === "month"
     ? "Vue par mois : pour chaque destination, Google Flights choisit le weekend le moins cher du mois. "
-    : "Vue par weekend : départ du mercredi au samedi, retour du samedi au mardi (2 à 4 nuits). Les 2 prochains weekends sont relevés chaque lundi, les suivants à tour de rôle. ") +
+    : "Vue par weekend : départ du mercredi au samedi, retour du samedi au mardi (2 à 4 nuits). Le weekend qui vient n’est pas couvert. Le suivant est relevé chaque lundi, les autres à tour de rôle. ") +
     "Prix aller-retour pour 1 adulte en classe éco, à vérifier sur Google Flights avant de réserver. Touche une destination pour le budget, la météo et le guide." +
     (up ? "<br>Dernier relevé : " + up.toLocaleString("fr-FR", { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) : "") +
     (S.data.searchesLeft != null ? " · " + S.data.searchesLeft + " recherches gratuites restantes ce mois" : "");
