@@ -64,7 +64,8 @@ h1 em{font-style:normal;color:var(--amber)}
 .seg button.on{background:var(--card2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
 .row2{display:flex;gap:8px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
-.pill.on{border-color:var(--green);color:var(--green)}
+.pill.on{border-color:var(--green);color:var(--green);background-color:rgba(67,217,143,.1)}
+.search:not(:placeholder-shown){border-color:var(--green)}
 select.pill{appearance:none;-webkit-appearance:none;padding-right:26px;
   background:var(--bg2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%239CB1C4' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center}
 .search{flex:1 1 160px;min-width:0;border:1px solid var(--line);background:var(--bg2);border-radius:999px;padding:7px 14px;font-size:16px}
@@ -359,9 +360,9 @@ function renderCtrl() {
     '<div class="seg two"><button data-view="list" class="' + (S.view === "list" ? "on" : "") + '">☰ Liste</button><button data-view="map" class="' + (S.view === "map" ? "on" : "") + '">🗺️ Carte</button></div>' +
     '<div class="row2">' +
     '<button class="pill' + (S.direct ? " on" : "") + '" id="direct">' + (S.direct ? "✓ " : "") + "Direct</button>" +
-    '<select class="pill" id="max">' + opts(bud, S.max) + "</select>" +
-    (S.view === "list" ? '<select class="pill" id="sort">' + opts([["price", "Moins cher"], ["duration", "Vol le plus court"], ["name", "A → Z"]], S.sort) + "</select>" +
-      '<select class="pill" id="group">' + opts([["none", "Sans groupe"], ["country", "Par pays"], ["airline", "Par compagnie"]], S.group) + "</select>" : "") +
+    '<select class="pill' + (S.max ? " on" : "") + '" id="max">' + opts(bud, S.max) + "</select>" +
+    (S.view === "list" ? '<select class="pill' + (S.sort !== "price" ? " on" : "") + '" id="sort">' + opts([["price", "Moins cher"], ["duration", "Vol le plus court"], ["name", "A → Z"]], S.sort) + "</select>" +
+      '<select class="pill' + (S.group !== "none" ? " on" : "") + '" id="group">' + opts([["none", "Sans groupe"], ["country", "Par pays"], ["airline", "Par compagnie"]], S.group) + "</select>" : "") +
     '<input class="search" id="q" type="search" placeholder="Ville, pays ou compagnie" value="' + esc(S.q) + '"></div></div>';
 }
 
